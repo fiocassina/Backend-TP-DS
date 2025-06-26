@@ -1,0 +1,26 @@
+{
+  "name": "backend-tp-ds",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "start:dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/index.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiocassina/Backend-TP-DS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fiocassina/Backend-TP-DS/issues"
+  },
+  "homepage": "https://github.com/fiocassina/Backend-TP-DS#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.3"
+  }
+}
