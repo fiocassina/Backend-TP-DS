@@ -1,8 +1,6 @@
 import { TipoMaterial } from '../model/tipoMaterial-model'
 
-let tiposMateriales: TipoMaterial[] = [
- 
-];
+let tiposMateriales: TipoMaterial[] = [];
 
 
 let nextId: number = 1;
