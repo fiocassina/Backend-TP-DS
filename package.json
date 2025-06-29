@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
-    "start:dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/index.js\"",
+    "start:dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/app.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,5 +22,9 @@
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "tsc-watch": "^7.1.1"
   }
 }
