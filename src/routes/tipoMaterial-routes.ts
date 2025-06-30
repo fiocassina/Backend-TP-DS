@@ -5,14 +5,14 @@ import {
   createTipoMaterial,
   updateTipoMaterial,
   deleteTipoMaterial,
-} from '../controllers/tipoMaterial-controllers';
+} from '../controllers/tipoMaterial-controllers.js';
 
 const router = Router();
 
 
 router.get('/', getAllTiposMaterial);
 router.get('/:id', getTipoMaterialById);
-//router.post('/', createTipoMaterial);
+router.post('/', createTipoMaterial);
 router.put('/:id', updateTipoMaterial); 
 router.patch('/:id', updateTipoMaterial); 
 router.delete('/:id', deleteTipoMaterial);

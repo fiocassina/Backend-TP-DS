@@ -1,4 +1,4 @@
-import { TipoMaterial } from '../model/tipoMaterial-model'
+import { TipoMaterial } from '../model/tipoMaterial-model.js'
 
 let tiposMateriales: TipoMaterial[] = [];
 
