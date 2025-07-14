@@ -1,55 +1,56 @@
-import { TipoMaterial } from '../model/tipoMaterial-model.js'
 
-let tiposMateriales: TipoMaterial[] = [];
-
-
-let nextId: number = 1;
-
-export const getAll = (): TipoMaterial[] => {
-  return tiposMateriales;
-};
+import TipoMaterialModel, { ITipoMaterial } from '../model/tipoMaterial-model.js'; // Importación correcta del Modelo y la Interfaz
 
 
-export const getById = (id: number) => {
-  // En el futuro, esto buscaría en una base de datos.
-  return { id: 1, nombre: "John Doe" };
-};
-
-
-//export const getById = (id: number): TipoMaterial | undefined => {
- // return tiposMateriales.find(t => Number(t.id) === id);
-//};
-
-
-export const create = (data: { nombre: string }): TipoMaterial => {
-  const nuevoMaterial: TipoMaterial = {
-    id: String(nextId++),
-    nombre: data.nombre,
-  };
-  tiposMateriales.push(nuevoMaterial);
-  return nuevoMaterial;
-};
-
-
-export const update = (id: number, data: Partial<Omit<TipoMaterial, 'id'>>): TipoMaterial | null => {
-  const index = tiposMateriales.findIndex((t) => Number(t.id) === id);
-  if (index === -1) {
-    return null; 
+export const getAll = async (): Promise<ITipoMaterial[]> => {
+  try {
+    const tipos = await TipoMaterialModel.find(); // Mongoose: Encuentra todos los documentos en la colección
+    return tipos;
+  } catch (error) {
+    console.error("Error en service getAll:", error);
+    throw error; // Relanza el error para que el controlador lo capture
   }
-  const materialExistente = tiposMateriales[index];
+};
 
-  const materialActualizado = { ...materialExistente, ...data };
-  tiposMateriales[index] = materialActualizado;
-  return materialActualizado;
+export const getById = async (id: string): Promise<ITipoMaterial | null> => {
+  try {
+    const tipo = await TipoMaterialModel.findById(id);
+    return tipo; 
+  } catch (error) {
+    console.error(`Error en service getById con ID ${id}:`, error);
+    throw error; 
+  }
 };
 
 
-export const remove = (id: number): TipoMaterial | null => {
-  const index = tiposMateriales.findIndex(t => Number(t.id) === id);
-  if (index === -1) {
-    return null;
+export const create = async (data: { nombre: string; descripcion: string }): Promise<ITipoMaterial> => {
+  try {
+    const nuevoMaterial = new TipoMaterialModel(data); // Crea una nueva instancia del modelo
+    await nuevoMaterial.save(); 
+    return nuevoMaterial;
+  } catch (error) {
+    console.error("Error en service create:", error);
+    throw error;
   }
+};
 
-  const [materialEliminado] = tiposMateriales.splice(index, 1);
-  return materialEliminado;
+
+export const update = async (id: string, data: Partial<ITipoMaterial>): Promise<ITipoMaterial | null> => {
+  try {
+    const tipoActualizado = await TipoMaterialModel.findByIdAndUpdate(id, data, { new: true });
+    return tipoActualizado; 
+  } catch (error) {
+    console.error(`Error en service update con ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const remove = async (id: string): Promise<ITipoMaterial | null> => {
+  try {
+    const tipoEliminado = await TipoMaterialModel.findByIdAndDelete(id);
+    return tipoEliminado; 
+  } catch (error) {
+    console.error(`Error en service remove con ID ${id}:`, error);
+    throw error;
+  }
 };
