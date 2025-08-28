@@ -1,6 +1,7 @@
 import express from 'express'
 import tipoMaterialRoutes from './routes/tipoMaterial-routes.js'
 import usuarioRoutes from './routes/usuario-routes.js'
+import claseRoutes from './routes/clase-routes.js'
 
 import conectarDB from './config/db.js'
 import cors from 'cors'
@@ -13,5 +14,6 @@ app.use(cors()); // para permitir el acceso desde otros dominios
 app.use(express.json()); // para poder recibir datos en formato JSON
 app.use('/api/tipo-materiales', tipoMaterialRoutes)
 app.use('/api/usuarios', usuarioRoutes)
+app.use('/api/clases', claseRoutes)
 
 export default app
