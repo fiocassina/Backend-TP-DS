@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
+import { auth } from '../middleware/auth.js';
 import {
-  getAllClases,
+  getMisClases,
   getClaseById,
   createClase,
   updateClase,
@@ -10,9 +11,9 @@ import {
 const router = Router();
 
 
-router.get('/', getAllClases);
+router.get('/',auth, getMisClases);
 router.get('/:id', getClaseById);
-router.post('/', createClase);
+router.post('/',auth, createClase);
 router.put('/:id', updateClase); 
 router.patch('/:id', updateClase); 
 router.delete('/:id', deleteClase);

@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import * as service from '../services/clase-services.js';
-
-
+import Clase from '../model/clase-model.js';
+interface RequestConUser extends Request {
+  user?: { id: string };
+}
+/*
 
 export const getAllClases = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -10,6 +13,24 @@ export const getAllClases = async (req: Request, res: Response): Promise<void> =
   } catch (error) {
     console.error("Error en controller getAllClases:", error);
     res.status(500).json({ message: 'Error interno del servidor al obtener clases' });
+  }
+};*/
+export const getMisClases =  async (req: RequestConUser, res: Response) => {
+  try {
+    // Obtenemos el id del usuario desde el middleware auth
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ mensaje: "Usuario no autenticado" });
+    }
+
+    // Buscamos las clases donde el usuario es creador o está anotado
+    const clases = await Clase.find({ creadorId: userId });
+    
+    res.status(200).json(clases);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener clases", error });
   }
 };
 
@@ -47,20 +68,33 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
         res.status(500).json({ message: 'Error interno del servidor al buscar clase' });
     }
 };
-
-export const createClase = async (req: Request, res: Response): Promise<void> => {
+export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
+  // Validación básica
   if (!req.body.nombre || !req.body.materia) {
     res.status(400).json({ message: 'Nombre y materia son requeridos' });
     return;
   }
+
+  // Validar que venga el usuario desde el middleware auth
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ message: 'Usuario no autenticado' });
+    return;
+  }
+
   try {
-    const nuevaClase = await service.create(req.body); 
+    // Agregamos el creador al objeto que se va a guardar
+    const nuevaClase = await service.create({ 
+      ...req.body,
+      profesorId: userId 
+    });
+
     res.status(201).json({ message: 'Clase creada', data: nuevaClase });
   } catch (error) {
     console.error("Error en controller createClase:", error);
     res.status(500).json({ message: 'Error interno del servidor al crear clase' });
-    }
-  };
+  }
+};
 
 
 export const updateClase = async (req: Request, res: Response): Promise<void> => {

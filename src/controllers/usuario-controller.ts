@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import Usuario from '../model/usuario-model.js';
+import jwt from 'jsonwebtoken';
 
 export const login: RequestHandler = async (req, res, next) => {
   try {
@@ -16,9 +17,16 @@ export const login: RequestHandler = async (req, res, next) => {
       res.status(401).json({ mensaje: 'Contraseña incorrecra' });
       return; 
     }
+    
+    const token = jwt.sign(
+      { id: usuario._id },
+      "clave-secreta",
+      { expiresIn: "3h" }
+    );
+
 
     // Si todo es correcto, envía una respuesta de éxito
-    res.status(200).json({ mensaje: 'Inicio de sesion exitoso', usuario: {
+    res.status(200).json({ mensaje: 'Inicio de sesion exitoso',token, usuario: {
       id: usuario._id,
       nombreCompleto: usuario.nombreCompleto,
       email: usuario.email

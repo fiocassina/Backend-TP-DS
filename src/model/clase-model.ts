@@ -6,6 +6,7 @@ export interface IClase extends Document {
     materia: string;
     descripcion: string;
     clave: string;
+    profesorId: string;
 }
 
 const claseSchema = new Schema<IClase>({
@@ -13,6 +14,7 @@ const claseSchema = new Schema<IClase>({
     materia: { type: String, required: true, trim: true },
     descripcion: { type: String, trim: true },
     clave: { type: String, unique: true },
+    profesorId: { type: String, required: true },
 }, {
     timestamps: true
 });
@@ -20,7 +22,8 @@ const claseSchema = new Schema<IClase>({
 
 claseSchema.pre<IClase>('save', function (next) {
    if (this.isNew) {   //para que sólo se ejecute al crear una nueva clase, no al actualizar
-        this.clave = crypto.randomBytes(3).toString('hex').toUpperCase();  // Genera un código aleatorio de 6 caracteres en mayúsculas(son 3 bytes pero hace el pasaje a hexadecimal que duplica la cantidad de caracteres)
+        this.clave = crypto.randomBytes(3).toString('hex').toUpperCase();  // Genera un código aleatorio de 6 caracteres en mayúsculas
+        // (son 3 bytes pero hace el pasaje a hexadecimal que duplica la cantidad de caracteres)
     }
     next(); 
 });
