@@ -14,7 +14,7 @@ export const login: RequestHandler = async (req, res, next) => {
 
     const passwordValido = await usuario.compararPassword(password);
     if (!passwordValido) {
-      res.status(401).json({ mensaje: 'Contraseña incorrecra' });
+      res.status(401).json({ mensaje: 'Contraseña incorrecta' });
       return; 
     }
     

@@ -6,6 +6,7 @@ import {
   createClase,
   updateClase,
   deleteClase,
+  inscribirAlumno,
 } from '../controllers/clase-controllers.js';
 
 const router = Router();
@@ -17,6 +18,6 @@ router.post('/',auth, createClase);
 router.put('/:id', updateClase); 
 router.patch('/:id', updateClase); 
 router.delete('/:id', deleteClase);
-
+router.post('/inscribir', auth, inscribirAlumno);
 
 export default router;

@@ -15,24 +15,27 @@ export const getAllClases = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Error interno del servidor al obtener clases' });
   }
 };*/
-export const getMisClases =  async (req: RequestConUser, res: Response) => {
+export const getMisClases = async (req: RequestConUser, res: Response) => {
   try {
-    // Obtenemos el id del usuario desde el middleware auth
     const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ mensaje: "Usuario no autenticado" });
     }
 
-    // Buscamos las clases donde el usuario es creador o está anotado
-    const clases = await Clase.find({ profesorId: userId });
-    
-    res.status(200).json(clases);
+    // Clases como profesor
+    const clasesComoProfe = await Clase.find({ profesorId: userId });
+
+    // Clases como alumno
+    const clasesComoAlumno = await Clase.find({ alumnos: userId });
+
+    res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al obtener clases", error });
   }
 };
+
 
 export const getClaseById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -47,6 +50,42 @@ export const getClaseById = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Error interno del servidor al obtener clase por ID' });
   }
 };
+
+export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { clave } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ mensaje: "Usuario no autenticado" });
+    }
+
+    if (!clave) {
+      return res.status(400).json({ mensaje: "Se requiere la clave de la clase" });
+    }
+
+    // Buscar clase por clave
+    const clase = await Clase.findOne({ clave: clave });
+    if (!clase) {
+      return res.status(404).json({ mensaje: "Clase no encontrada" });
+    }
+
+    // Verificar si el alumno ya está inscrito
+    if (clase.alumnos.includes(userId)) {
+      return res.status(400).json({ mensaje: "Ya estás inscrito en esta clase" });
+    }
+
+    // Agregar alumno y guardar
+    clase.alumnos.push(userId);
+    await clase.save();
+
+    res.status(200).json({ mensaje: "Inscripción exitosa", clase });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al inscribir alumno", error });
+  }
+};
+
 
 export const getClaseByClave = async (req: Request, res: Response): Promise<void> => {
   const { clave } = req.query;

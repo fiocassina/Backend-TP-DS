@@ -7,6 +7,7 @@ export interface IClase extends Document {
     descripcion: string;
     clave: string;
     profesorId: string;
+    alumnos: string[]; // ids de los alumnos
 }
 
 const claseSchema = new Schema<IClase>({
@@ -14,7 +15,7 @@ const claseSchema = new Schema<IClase>({
     materia: { type: String, required: true, trim: true },
     descripcion: { type: String, trim: true },
     clave: { type: String, unique: true },
-    profesorId: { type: String, required: true },
+    profesorId: { type: String, required: true }, alumnos: { type: [String], default: [] } // <-- inicializamos vacío
 }, {
     timestamps: true
 });
