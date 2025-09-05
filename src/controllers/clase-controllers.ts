@@ -25,7 +25,7 @@ export const getMisClases =  async (req: RequestConUser, res: Response) => {
     }
 
     // Buscamos las clases donde el usuario es creador o está anotado
-    const clases = await Clase.find({ creadorId: userId });
+    const clases = await Clase.find({ profesorId: userId });
     
     res.status(200).json(clases);
   } catch (error) {

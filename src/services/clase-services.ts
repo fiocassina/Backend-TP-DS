@@ -1,5 +1,6 @@
 import ClaseModel, {IClase} from '../model/clase-model.js';
 
+
 export const getAll = async (): Promise<IClase[]> => {
   try {
     const clases = await ClaseModel.find(); // Mongoose: Encuentra todos los documentos en la colección
@@ -21,10 +22,23 @@ export const getById = async (id: string): Promise<IClase | null> => {
 };
 
 
-export const create = async (data: { nombre: string; materia: string; descripcion: string; clave: string }): Promise<IClase> => {
+export const create = async (data: { 
+  nombre: string; 
+  materia: string; 
+  descripcion?: string; 
+  profesorId: string; 
+}): Promise<IClase> => {
   try {
-    const nuevaClase = new ClaseModel(data); // Crea una nueva instancia del modelo
-    await nuevaClase.save(); 
+    // ✅ Crea la instancia con los datos (el modelo se encargará de generar la clave automáticamente)
+    const nuevaClase = new ClaseModel({
+      nombre: data.nombre,
+      materia: data.materia,
+      descripcion: data.descripcion,
+      profesorId: data.profesorId
+      // ¡No incluyas "clave" aquí! El modelo la genera automáticamente
+    });
+
+    await nuevaClase.save(); // ✅ Al guardar, se ejecutará el "pre('save')" que genera la clave
     return nuevaClase;
   } catch (error) {
     console.error("Error en service create:", error);
