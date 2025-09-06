@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as service from '../services/clase-services.js';
 import Clase from '../model/clase-model.js';
+import mongoose from 'mongoose';
 interface RequestConUser extends Request {
   user?: { id: string };
 }
@@ -27,7 +28,7 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
     const clasesComoProfe = await Clase.find({ profesorId: userId });
 
     // Clases como alumno
-    const clasesComoAlumno = await Clase.find({ alumnos: userId });
+    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');  //el populate funciona como si hicieramos un "JOIN" en SQL, es p mostrar nombre y apellido del profe
 
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
@@ -70,13 +71,16 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
       return res.status(404).json({ mensaje: "Clase no encontrada" });
     }
 
+    // Convertir el ID del usuario a ObjectId antes de verificar y guardar
+    const userIdAsObjectId = new mongoose.Types.ObjectId(userId);
+
     // Verificar si el alumno ya está inscrito
-    if (clase.alumnos.includes(userId)) {
+    if (clase.alumnos.includes(userIdAsObjectId)) {
       return res.status(400).json({ mensaje: "Ya estás inscrito en esta clase" });
     }
 
     // Agregar alumno y guardar
-    clase.alumnos.push(userId);
+    clase.alumnos.push(userIdAsObjectId);
     await clase.save();
 
     res.status(200).json({ mensaje: "Inscripción exitosa", clase });
@@ -122,10 +126,12 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
   }
 
   try {
+
+
     // Agregamos el creador al objeto que se va a guardar
     const nuevaClase = await service.create({ 
       ...req.body,
-      profesorId: userId 
+      profesorId: new mongoose.Types.ObjectId(userId)  // Convertimos a ObjectId antes de guardar 
     });
 
     res.status(201).json({ message: 'Clase creada', data: nuevaClase });

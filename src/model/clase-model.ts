@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 import crypto from 'crypto'; // Importamos crypto para generar la clave de la clase
 
 export interface IClase extends Document {
@@ -6,8 +6,8 @@ export interface IClase extends Document {
     materia: string;
     descripcion: string;
     clave: string;
-    profesorId: string;
-    alumnos: string[]; // ids de los alumnos
+    profesorId: Types.ObjectId; 
+    alumnos: Types.ObjectId[]; // ids de los alumnos
 }
 
 const claseSchema = new Schema<IClase>({
@@ -15,7 +15,15 @@ const claseSchema = new Schema<IClase>({
     materia: { type: String, required: true, trim: true },
     descripcion: { type: String, trim: true },
     clave: { type: String, unique: true },
-    profesorId: { type: String, required: true }, alumnos: { type: [String], default: [] } // <-- inicializamos vacío
+    profesorId: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Usuario', // Esencial para q funcione el populate
+        required: true
+    },
+    alumnos: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'Usuario' // Esencial para q funcione el populate
+    }] // <-- inicializamos vacío
 }, {
     timestamps: true
 });
