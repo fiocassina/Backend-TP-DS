@@ -38,11 +38,11 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 };
 
 
-export const getClaseById = async (req: Request, res: Response): Promise<void> => {
+export const getClaseById = async (req: Request, res: Response) => {
   try {
-    const clases = await service.getById(req.params.id); 
-    if (clases) {
-      res.status(200).json(clases);
+    const clase = await Clase.findById(req.params.id).populate('profesorId', 'nombreCompleto');
+    if (clase) {
+      res.status(200).json(clase);
     } else {
       res.status(404).json({ message: 'Clase no encontrada' });
     }
@@ -51,6 +51,7 @@ export const getClaseById = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Error interno del servidor al obtener clase por ID' });
   }
 };
+
 
 export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
   try {
