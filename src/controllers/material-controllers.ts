@@ -1,6 +1,10 @@
-// src/controllers/material-controllers.ts
 import { Request, Response } from 'express';
 import * as service from '../services/material-services.js';
+import { MaterialModel } from '../model/material-model.js';
+
+interface RequestWithFile extends Request {
+  file?: Express.Multer.File;
+}
 
 export const getAllMateriales = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -37,15 +41,37 @@ export const getMaterialesPorClase = async (req: Request, res: Response): Promis
   }
 };
 
-export const createMaterial = async (req: Request, res: Response): Promise<void> => {
-  const { nombre, tipoId, claseId } = req.body;
+export const createMaterial = async (req: RequestWithFile, res: Response): Promise<void> => {
+  // ✅ Corregido: Los nombres de los campos en el backend deben coincidir con los del frontend
+  const { nombre, tipoId, claseId, url } = req.body;
+  const file = req.file;
+
+  // ✅ Corregido: Verificar que los campos requeridos estén presentes
   if (!nombre || !tipoId || !claseId) {
     res.status(400).json({ message: 'Nombre, tipo y clase son requeridos' });
     return;
   }
 
   try {
-    const nuevoMaterial = await service.create(req.body);
+    let materialData: any = {
+      nombre,
+      tipo: tipoId,
+      clase: claseId,
+    };
+
+    // Si hay un archivo, usamos sus datos de Multer
+    if (file) {
+      materialData.rutaArchivo = file.path;
+      materialData.nombreArchivo = file.originalname;
+    } else if (url) {
+      // Si no hay archivo, verificamos si hay una URL
+      materialData.url = url;
+    } else {
+      res.status(400).json({ message: 'Se requiere un archivo o una URL' });
+      return;
+    }
+
+    const nuevoMaterial = await service.create(materialData);
     res.status(201).json({ message: 'Material creado', data: nuevoMaterial });
   } catch (error) {
     console.error('Error en controller createMaterial:', error);

@@ -1,4 +1,3 @@
-// src/services/material-services.ts
 import { MaterialModel, IMaterial } from '../model/material-model.js';
 
 export const getAll = async () => {
@@ -13,12 +12,23 @@ export const getByClase = async (claseId: string) => {
   return MaterialModel.find({ clase: claseId }).populate('tipo');
 };
 
-export const create = async (data: { nombre: string; tipoId: string; claseId: string }) => {
-  return MaterialModel.create({
+export const create = async (data: { nombre: string; tipo: string; clase: string; url?: string; rutaArchivo?: string; nombreArchivo?: string }) => {
+  const newMaterialData: any = {
     nombre: data.nombre,
-    tipo: data.tipoId,
-    clase: data.claseId,
-  });
+    tipo: data.tipo,
+    clase: data.clase,
+  };
+
+  if (data.url) {
+    newMaterialData.url = data.url;
+  }
+
+  if (data.rutaArchivo) {
+    newMaterialData.rutaArchivo = data.rutaArchivo;
+    newMaterialData.nombreArchivo = data.nombreArchivo;
+  }
+
+  return MaterialModel.create(newMaterialData);
 };
 
 export const update = async (id: string, data: any) => {
