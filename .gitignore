@@ -1,4 +1,13 @@
-node_modules
+/node_modules
+
+# Archivos de compilación
+*.js
+*.d.ts
+*.map
+
+# Archivos de entorno local
+*.cmd
+*.ps1
 
 coverage
 
