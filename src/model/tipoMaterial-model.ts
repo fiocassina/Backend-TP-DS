@@ -22,7 +22,6 @@ const tipoMaterialSchema: Schema = new Schema({
   }
 });
 
-
 // modelo de TipoMaterial
 const TipoMaterialModel = mongoose.model<ITipoMaterial>('TipoMaterial', tipoMaterialSchema);
 export default TipoMaterialModel;

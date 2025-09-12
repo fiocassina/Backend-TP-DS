@@ -1,4 +1,6 @@
 import ClaseModel, {IClase} from '../model/clase-model.js';
+import mongoose from 'mongoose';
+import { MaterialModel } from '../model/material-model.js';
 
 
 export const getAll = async (): Promise<IClase[]> => {
@@ -59,8 +61,17 @@ export const update = async (id: string, data: Partial<IClase>): Promise<IClase 
 
 export const remove = async (id: string): Promise<IClase | null> => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error('ID de clase inválido');
+    }
+
+    // 1️⃣ Eliminar todos los materiales asociados a la clase
+    await MaterialModel.deleteMany({ clase: id });
+
+    // 2️⃣ Eliminar la clase
     const claseEliminada = await ClaseModel.findByIdAndDelete(id);
-    return claseEliminada; 
+
+    return claseEliminada; // null si no existía
   } catch (error) {
     console.error(`Error en service remove con ID ${id}:`, error);
     throw error;

@@ -5,6 +5,7 @@ import * as service from '../services/tipoProyecto-services.js';
 export const getAllTiposProyecto = async (req: Request, res: Response): Promise<void> => {
   try {
     const tipos = await service.getAll(); 
+    console.log("Tipos de proyecto desde backend:", tipos);
     res.status(200).json(tipos);
   } catch (error) {
     console.error("Error en controller getAllTiposProyecto:", error);
