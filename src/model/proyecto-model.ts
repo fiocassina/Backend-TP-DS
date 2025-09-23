@@ -1,13 +1,6 @@
 import { Schema, model, Document, Types } from "mongoose";
 import { IClase } from "./clase-model.js";
 
-interface IEntrega {
-  alumno: Types.ObjectId;
-  estado: "pendiente" | "entregado" | "tarde";
-  archivoUrl?: string;
-  fechaEntrega?: Date;
-}
-
 export interface IProyecto extends Document {
   nombre: string;
   descripcion?: string;
@@ -19,15 +12,7 @@ export interface IProyecto extends Document {
   };
   fechaCreacion: Date;
   fechaEntrega: Date;
-  entregas: IEntrega[];
 }
-
-const entregaSchema = new Schema<IEntrega>({
-  alumno: { type: Schema.Types.ObjectId, ref: "Usuario", required: true },
-  estado: { type: String, enum: ["pendiente", "entregado", "tarde"], default: "pendiente" },
-  archivoUrl: { type: String },
-  fechaEntrega: { type: Date }
-});
 
 const proyectoSchema = new Schema<IProyecto>({
   nombre: { type: String, required: true },
@@ -39,8 +24,7 @@ const proyectoSchema = new Schema<IProyecto>({
     descripcion: { type: String }
   },
   fechaCreacion: { type: Date, default: Date.now },
-  fechaEntrega: { type: Date, required: true },
-  entregas: [entregaSchema]
+  fechaEntrega: { type: Date, required: true }
 });
 
 export default model<IProyecto>("Proyecto", proyectoSchema);

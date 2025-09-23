@@ -12,43 +12,41 @@ interface ProyectoInput {
 
 export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => {
   const clase = await Clase.findById(data.claseId);
-  if (!clase) throw new Error("Clase no encontrada");
+  if (!clase) {
+    throw new Error("Clase no encontrada");
+  }
 
-  // Inicializamos entregas para todos los alumnos
-  const entregasIniciales = clase.alumnos.map(alumnoId => ({
-    alumno: alumnoId,
-    estado: "pendiente"
-  }));
+  // La lógica de inicializar entregas ya no es necesaria aquí
+  // ya que las entregas son documentos separados.
 
   const nuevoProyecto = new Proyecto({
     nombre: data.nombre,
     descripcion: data.descripcion,
     clase: new mongoose.Types.ObjectId(data.claseId),
-    tipoProyecto: new mongoose.Types.ObjectId(data.tipoProyectoId),
+    tipoProyecto: {
+      _id: new mongoose.Types.ObjectId(data.tipoProyectoId),
+      nombre: data.tipoProyectoId, // Puedes ajustar esto para buscar el nombre real
+      descripcion: '' // Puedes ajustar esto para buscar la descripción real
+    },
     fechaEntrega: data.fechaEntrega,
-    entregas: entregasIniciales
   });
 
   return await nuevoProyecto.save();
 };
 
-// Función para entregar tarea
-export const entregarTarea = async (proyectoId: string, alumnoId: string, archivoUrl: string): Promise<IProyecto | null> => {
-  const proyecto = await Proyecto.findById(proyectoId);
-  if (!proyecto) throw new Error("Proyecto no encontrado");
+export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
+  // Ahora la consulta es más simple, ya que el proyecto no contiene las entregas.
+  // Buscamos las clases a las que pertenece el alumno y luego los proyectos de esas clases.
+  const clasesDelAlumno = await Clase.find({ alumnos: new mongoose.Types.ObjectId(alumnoId) }).select('_id');
+  const idsDeClases = clasesDelAlumno.map(clase => clase._id);
 
-  const entrega = proyecto.entregas.find(e => e.alumno.toString() === alumnoId);
-  if (!entrega) throw new Error("Alumno no pertenece a este proyecto");
+  const proyectos = await Proyecto.find({ clase: { $in: idsDeClases } })
+    .populate("clase tipoProyecto");
 
-  const ahora = new Date();
-  entrega.archivoUrl = archivoUrl;
-  entrega.fechaEntrega = ahora;
-  entrega.estado = ahora > proyecto.fechaEntrega ? "tarde" : "entregado";
-
-  return await proyecto.save();
+  return proyectos;
 };
 
-// Obtener proyectos por alumno
-export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
-  return await Proyecto.find({ "entregas.alumno": alumnoId }).populate("clase tipoProyecto");
+// Puedes añadir una función para obtener un proyecto por su ID si lo necesitas
+export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
+  return await Proyecto.findById(proyectoId).populate("clase tipoProyecto");
 };

@@ -7,7 +7,7 @@ import materialRoutes from './routes/material-routes.js'
 import tipoProyectoRoutes from './routes/tipoProyecto-routes.js'
 import conectarDB from './config/db.js'
 import cors from 'cors'
-
+import entregaRoutes from './routes/entrega-routes.js'
 const app = express()
 conectarDB()
 
@@ -31,5 +31,6 @@ app.use('/api/clases', claseRoutes)
 app.use('/api/proyectos', proyectoRoutes)
 app.use('/api/material', materialRoutes); // Agregar esta línea para las rutas de materiales
 app.use('/api/tipo-proyectos', tipoProyectoRoutes)
+app.use('/api/entregas', entregaRoutes);
 
 export default app
