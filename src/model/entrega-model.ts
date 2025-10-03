@@ -1,21 +1,37 @@
-import { Schema, model, Document, Types } from "mongoose";
-import { IProyecto } from "./proyecto-model.js";
-import { IUsuario } from "./usuario-model.js";
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface IEntrega extends Document {
-  proyecto: Types.ObjectId | IProyecto;
-  alumno: Types.ObjectId | IUsuario;
+export interface Entrega extends Document {
+  proyecto: mongoose.Types.ObjectId;  // referencia a Proyecto
+  alumno: mongoose.Types.ObjectId;    // referencia a Usuario
   comentario?: string;
   archivoUrl?: string;
   fechaEntrega: Date;
 }
 
-const entregaSchema = new Schema<IEntrega>({
-  proyecto: { type: Schema.Types.ObjectId, ref: "Proyecto", required: true },
-  alumno: { type: Schema.Types.ObjectId, ref: "Usuario", required: true },
-  comentario: { type: String },
-  archivoUrl: { type: String },
-  fechaEntrega: { type: Date, default: Date.now }
+const entregaSchema = new Schema<Entrega>({
+  proyecto: {
+    type: Schema.Types.ObjectId,
+    ref: "Proyecto",
+    required: true
+  },
+  alumno: {
+    type: Schema.Types.ObjectId,
+    ref: "Usuario",
+    required: true
+  },
+  comentario: {
+    type: String,
+    trim: true
+  },
+  archivoUrl: {
+    type: String
+  },
+  fechaEntrega: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true // crea createdAt y updatedAt automáticamente
 });
 
-export default model<IEntrega>("Entrega", entregaSchema);
+export default mongoose.model<Entrega>("Entrega", entregaSchema);

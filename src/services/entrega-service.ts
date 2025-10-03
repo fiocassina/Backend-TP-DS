@@ -1,51 +1,54 @@
-import Entrega, { IEntrega } from "../model/entrega-model.js";
-import Proyecto from "../model/proyecto-model.js";
+// src/app/services/entrega.service.ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { Entrega } from '../models/entrega-interface';
 
-export const crearEntrega = async (
-  proyectoId: string,
-  alumnoId: string,
-  comentario?: string,
-  archivoUrl?: string,
-  tipoArchivo?: "pdf" | "imagen"
-): Promise<IEntrega> => {
-  const proyecto = await Proyecto.findById(proyectoId);
-  if (!proyecto) throw new Error("Proyecto no encontrado");
+@Injectable({
+  providedIn: 'root'
+})
+export class EntregaService {
+  private http = inject(HttpClient);
+  private baseUrl = 'http://localhost:3000/api/entregas';
 
-  const ahora = new Date();
-  const estado: "entregado" | "tarde" = ahora > proyecto.fechaEntrega ? "tarde" : "entregado";
+  // Método privado para no repetir token y headers
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('EntregaService: no se encontró token en localStorage');
+      // devolver headers vacíos en vez de lanzar: así la petición se hace y el backend responde 401 si corresponde
+      return new HttpHeaders();
+    }
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  }
 
-  const nuevaEntrega = new Entrega({
-    proyecto: proyectoId,
-    alumno: alumnoId,
-    comentario,
-    archivoUrl,
-    tipoArchivo,
-    fechaEntrega: ahora,
-    estado
-  });
+  // ----------------- ENTREGAS -----------------
 
-  const entregaGuardada = await nuevaEntrega.save();
+  crearEntrega(formData: FormData): Observable<Entrega> {
+    return this.http.post<Entrega>(this.baseUrl, formData, { headers: this.getAuthHeaders() });
+  }
 
-  const entregaPoblada = await Entrega.findById(entregaGuardada._id)
-    .populate("proyecto")
-    .populate("alumno")
-    .exec();
+  obtenerEntregas(proyectoId: string): Observable<Entrega[]> {
+    return this.http.get<Entrega[]>(`${this.baseUrl}/proyecto/${proyectoId}`, { headers: this.getAuthHeaders() });
+  }
 
-  if (!entregaPoblada) throw new Error("No se pudo poblar la entrega");
+  obtenerEntregasPorAlumno(): Observable<Entrega[]> {
+    return this.http.get<Entrega[]>(`${this.baseUrl}/alumno/mis-entregas`, { headers: this.getAuthHeaders() });
+  }
 
-  return entregaPoblada;
-};
+  obtenerEntregaPorId(entregaId: string): Observable<Entrega> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Entrega>(`${this.baseUrl}/${entregaId}`, { headers });
+  }
 
-export const getEntregasPorProyecto = async (proyectoId: string): Promise<IEntrega[]> => {
-  return await Entrega.find({ proyecto: proyectoId })
-    .populate("proyecto")
-    .populate("alumno")
-    .exec();
-};
+  // ----------------- CORRECCIONES -----------------
 
-export const getEntregasPorAlumno = async (alumnoId: string): Promise<IEntrega[]> => {
-  return await Entrega.find({ alumno: alumnoId })
-    .populate("proyecto")
-    .populate("alumno")
-    .exec();
-};
+  crearCorreccion(entregaId: string, nota: number, comentario: string): Observable<any> {
+    const body = { entrega: entregaId, nota, comentario };
+    return this.http.post(`${this.baseUrl.replace('entregas', 'correcciones')}`, body, { headers: this.getAuthHeaders() });
+  }
+
+  obtenerCorrecciones(entregaId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl.replace('entregas', 'correcciones')}/entrega/${entregaId}`, { headers: this.getAuthHeaders() });
+  }
+}
