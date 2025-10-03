@@ -1,4 +1,3 @@
-// src/controllers/tipoMaterial-controllers.ts
 import { Request, Response } from 'express';
 import * as service from '../services/tipoMaterial-services.js';
 import TipoMaterialModel  from '../model/tipoMaterial-model.js';

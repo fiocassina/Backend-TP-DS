@@ -1,14 +1,14 @@
 
-import TipoMaterialModel, { ITipoMaterial } from '../model/tipoMaterial-model.js'; // Importación correcta del Modelo y la Interfaz
+import TipoMaterialModel, { ITipoMaterial } from '../model/tipoMaterial-model.js'; 
 
 
 export const getAll = async (): Promise<ITipoMaterial[]> => {
   try {
-    const tipos = await TipoMaterialModel.find(); // Mongoose: Encuentra todos los documentos en la colección
+    const tipos = await TipoMaterialModel.find(); 
     return tipos;
   } catch (error) {
     console.error("Error en service getAll:", error);
-    throw error; // Relanza el error para que el controlador lo capture
+    throw error; 
   }
 };
 
@@ -25,7 +25,7 @@ export const getById = async (id: string): Promise<ITipoMaterial | null> => {
 
 export const create = async (data: { nombre: string; descripcion: string }): Promise<ITipoMaterial> => {
   try {
-    const nuevoMaterial = new TipoMaterialModel(data); // Crea una nueva instancia del modelo
+    const nuevoMaterial = new TipoMaterialModel(data); 
     await nuevoMaterial.save(); 
     return nuevoMaterial;
   } catch (error) {

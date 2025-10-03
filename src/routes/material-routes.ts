@@ -12,7 +12,7 @@ import multer from 'multer';
 // Configuración de Multer para guardar archivos en la carpeta 'uploads'
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Asegúrate de que esta carpeta exista en la raíz de tu proyecto
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -26,7 +26,7 @@ const router = Router();
 router.get('/', getAllMateriales);
 router.get('/:id', getMaterialById);
 router.get('/clase/:claseId', getMaterialesPorClase);
-router.post('/', upload.single('file'), createMaterial); // Aquí se utiliza el middleware de Multer
+router.post('/', upload.single('file'), createMaterial); 
 router.put('/:id', updateMaterial);
 router.delete('/:id', deleteMaterial);
 

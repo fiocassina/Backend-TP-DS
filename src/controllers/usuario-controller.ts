@@ -24,8 +24,6 @@ export const login: RequestHandler = async (req, res, next) => {
       { expiresIn: "3h" }
     );
 
-
-    // Si todo es correcto, envía una respuesta de éxito
     res.status(200).json({ mensaje: 'Inicio de sesion exitoso',token, usuario: {
       id: usuario._id,
       nombreCompleto: usuario.nombreCompleto,

@@ -1,8 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Entrega extends Document {
-  proyecto: mongoose.Types.ObjectId;  // referencia a Proyecto
-  alumno: mongoose.Types.ObjectId;    // referencia a Usuario
+  proyecto: mongoose.Types.ObjectId;  
+  alumno: mongoose.Types.ObjectId;   
   comentario?: string;
   archivoUrl?: string;
   fechaEntrega: Date;
@@ -31,7 +31,7 @@ const entregaSchema = new Schema<Entrega>({
     default: Date.now
   }
 }, {
-  timestamps: true // crea createdAt y updatedAt automáticamente
+  timestamps: true 
 });
 
 export default mongoose.model<Entrega>("Entrega", entregaSchema);

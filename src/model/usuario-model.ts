@@ -1,7 +1,6 @@
 import { Schema, model, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
-//defino campos y metodos del modelo de usuario
 export interface IUsuario extends Document {
   nombreCompleto: string;
   email: string;
@@ -9,7 +8,7 @@ export interface IUsuario extends Document {
   compararPassword: (password: string) => Promise<boolean>;
 }
 
-//estructura
+
 const usuarioSchema = new Schema<IUsuario>({
   nombreCompleto: { type: String, required: true,},
   email: {type: String, required: true, unique: true,},

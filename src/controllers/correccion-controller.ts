@@ -17,7 +17,6 @@ export const crearCorreccion = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener todas las correcciones de una entrega
 export const getCorreccionesPorEntrega = async (req: Request, res: Response) => {
   try {
     const { entregaId } = req.params;
@@ -29,7 +28,6 @@ export const getCorreccionesPorEntrega = async (req: Request, res: Response) => 
   }
 };
 
-// Obtener todas las correcciones
 export const getTodasCorrecciones = async (req: Request, res: Response) => {
   try {
     const correcciones = await correccionService.getTodasCorrecciones();

@@ -14,8 +14,8 @@ export const auth = (req: RequestConUser, res: Response, next: NextFunction) => 
 
   try {
     const decoded = jwt.verify(token, "clave-secreta") as JwtPayload;
-    req.user = { id: decoded.id as string }; // agregamos el id del usuario a la request
-    next(); // pasamos al siguiente paso (la ruta real)
+    req.user = { id: decoded.id as string }; 
+    next(); 
   } catch (err) {
     res.status(401).json({ mensaje: "Token inválido o expirado" });
     return;

@@ -5,11 +5,11 @@ import { MaterialModel } from '../model/material-model.js';
 
 export const getAll = async (): Promise<IClase[]> => {
   try {
-    const clases = await ClaseModel.find(); // Mongoose: Encuentra todos los documentos en la colección
+    const clases = await ClaseModel.find(); 
     return clases;
   } catch (error) {
     console.error("Error en service getAll:", error);
-    throw error; // Relanza el error para que el controlador lo capture
+    throw error; 
   }
 };
 
@@ -31,16 +31,14 @@ export const create = async (data: {
   profesorId: string; 
 }): Promise<IClase> => {
   try {
-    // ✅ Crea la instancia con los datos (el modelo se encargará de generar la clave automáticamente)
     const nuevaClase = new ClaseModel({
       nombre: data.nombre,
       materia: data.materia,
       descripcion: data.descripcion,
       profesorId: data.profesorId
-      // ¡No incluyas "clave" aquí! El modelo la genera automáticamente
     });
 
-    await nuevaClase.save(); // ✅ Al guardar, se ejecutará el "pre('save')" que genera la clave
+    await nuevaClase.save(); 
     return nuevaClase;
   } catch (error) {
     console.error("Error en service create:", error);
@@ -65,13 +63,11 @@ export const remove = async (id: string): Promise<IClase | null> => {
       throw new Error('ID de clase inválido');
     }
 
-    // 1️⃣ Eliminar todos los materiales asociados a la clase
     await MaterialModel.deleteMany({ clase: id });
 
-    // 2️⃣ Eliminar la clase
     const claseEliminada = await ClaseModel.findByIdAndDelete(id);
 
-    return claseEliminada; // null si no existía
+    return claseEliminada; 
   } catch (error) {
     console.error(`Error en service remove con ID ${id}:`, error);
     throw error;

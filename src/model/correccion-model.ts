@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICorreccion extends Document {
-    entrega: mongoose.Types.ObjectId; // referencia a la entrega
+    entrega: mongoose.Types.ObjectId; 
     fechaCorreccion: Date;
     nota: number;
     comentario: string;

@@ -6,7 +6,6 @@ export interface ITipoProyecto extends Document {
   descripcion: string;
 }
 
-//estructura
 const tipoProyectoSchema = new Schema<ITipoProyecto>({
   nombre: { type: String, required: true, unique: true, trim: true },
   descripcion: {type: String, trim: true}}

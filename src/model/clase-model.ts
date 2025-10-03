@@ -7,7 +7,7 @@ export interface IClase extends Document {
     descripcion: string;
     clave: string;
     profesorId: Types.ObjectId; 
-    alumnos: Types.ObjectId[]; // ids de los alumnos
+    alumnos: Types.ObjectId[]; 
 }
 
 const claseSchema = new Schema<IClase>({
@@ -17,22 +17,21 @@ const claseSchema = new Schema<IClase>({
     clave: { type: String, unique: true },
     profesorId: {
         type: Schema.Types.ObjectId, 
-        ref: 'Usuario', // Esencial para q funcione el populate
+        ref: 'Usuario',
         required: true
     },
     alumnos: [{
         type: Schema.Types.ObjectId, 
-        ref: 'Usuario' // Esencial para q funcione el populate
-    }] // <-- inicializamos vacío
+        ref: 'Usuario' 
+    }] 
 }, {
     timestamps: true
 });
 
 
 claseSchema.pre<IClase>('save', function (next) {
-   if (this.isNew) {   //para que sólo se ejecute al crear una nueva clase, no al actualizar
+if (this.isNew) {   
         this.clave = crypto.randomBytes(3).toString('hex').toUpperCase();  // Genera un código aleatorio de 6 caracteres en mayúsculas
-        // (son 3 bytes pero hace el pasaje a hexadecimal que duplica la cantidad de caracteres)
     }
     next(); 
 });

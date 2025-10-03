@@ -2,11 +2,11 @@ import tipoProyectoModel, {ITipoProyecto} from "../model/tipoProyecto-model.js";
 
 export const getAll = async (): Promise<ITipoProyecto[]> => {
   try {
-      const tipos = await tipoProyectoModel.find(); // Mongoose: Encuentra todos los documentos en la colección
+      const tipos = await tipoProyectoModel.find(); 
       return tipos;
     } catch (error) {
       console.error("Error en service getAll:", error);
-      throw error; // Relanza el error para que el controlador lo capture
+      throw error; 
     }
   };
 
@@ -22,7 +22,7 @@ export const getById = async (id: string): Promise<ITipoProyecto | null> => {
 
   export const create = async (data: { nombre: string; descripcion: string }): Promise<ITipoProyecto> => {
     try {
-      const nuevoTipo = new tipoProyectoModel(data); // Crea una nueva instancia del modelo
+      const nuevoTipo = new tipoProyectoModel(data); 
       await nuevoTipo.save();
       return nuevoTipo;
     } catch (error) {

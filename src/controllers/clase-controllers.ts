@@ -7,16 +7,7 @@ interface RequestConUser extends Request {
   user?: { id: string };
 }
 
-/*
-export const getAllClases = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const clases = await service.getAll(); 
-    res.status(200).json(clases);
-  } catch (error) {
-    console.error("Error en controller getAllClases:", error);
-    res.status(500).json({ message: 'Error interno del servidor al obtener clases' });
-  }
-};*/
+
 export const getMisClases = async (req: RequestConUser, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -68,14 +59,12 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-    // Buscar clase por clave
     const clase = await Clase.findOne({ clave: clave });
     if (!clase) {
       res.status(404).json({ mensaje: "Clase no encontrada" });
       return;
     }
 
-    // Convertir el ID del usuario a ObjectId antes de verificar y guardar
     const userIdAsObjectId = new mongoose.Types.ObjectId(userId);
 
     // Verificar si el alumno ya está inscrito
@@ -84,7 +73,6 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-    // Agregar alumno y guardar
     clase.alumnos.push(userIdAsObjectId);
     await clase.save();
 
@@ -116,13 +104,11 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
   }
 };
 export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
-  // Validación básica
   if (!req.body.nombre || !req.body.materia) {
     res.status(400).json({ message: 'Nombre y materia son requeridos' });
     return;
   }
 
-  // Validar que venga el usuario desde el middleware auth
   const userId = req.user?.id;
   if (!userId) {
     res.status(401).json({ message: 'Usuario no autenticado' });
@@ -132,10 +118,9 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
   try {
 
 
-    // Agregamos el creador al objeto que se va a guardar
     const nuevaClase = await service.create({
       ...req.body,
-      profesorId: new mongoose.Types.ObjectId(userId)  // Convertimos a ObjectId antes de guardar 
+      profesorId: new mongoose.Types.ObjectId(userId) 
     });
 
     res.status(201).json({ message: 'Clase creada', data: nuevaClase });

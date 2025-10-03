@@ -3,13 +3,11 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Entrega from "../model/entrega-model.js";
 
-// Extiende Request para Multer y usuario autenticado
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
   user?: { id: string };
 }
 
-// Crear una nueva entrega
 export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   try {
     console.log('[entregas] crearEntrega - body:', req.body, 'file:', !!req.file);
@@ -32,7 +30,7 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
     await nuevaEntrega.save();
 
     const entregaConPopulates = await Entrega.findById(nuevaEntrega._id)
-      .populate('alumno', 'nombre apellido email')
+      .populate('alumno', 'nombreCompleto email')
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto');
 
     res.status(201).json({ message: "Entrega creada con éxito", data: entregaConPopulates });
@@ -42,7 +40,7 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   }
 };
 
-// Obtener entregas de un proyecto
+
 export const getEntregasPorProyecto = async (req: Request, res: Response) => {
   try {
     const { proyectoId } = req.params;
@@ -55,13 +53,13 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
     }
 
     const entregas = await Entrega.find({ proyecto: proyectoId })
-      .populate('alumno', 'nombre apellido email')
+      .populate('alumno', 'nombreCompleto email')
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
       .lean();
 
+
     console.log(`[entregas] encontrados: ${entregas.length} entregas para proyecto ${proyectoId}`);
 
-    // Si el frontend espera { data: [...] } podés usar ?wrap=true
     if (req.query.wrap === 'true') return res.status(200).json({ data: entregas });
 
     return res.status(200).json(entregas);
@@ -71,7 +69,6 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
   }
 };
 
-// Obtener todas las entregas de un alumno autenticado
 export const getEntregasPorAlumno = async (req: RequestWithFile, res: Response) => {
   try {
     const alumnoId = req.user?.id;
@@ -88,7 +85,6 @@ export const getEntregasPorAlumno = async (req: RequestWithFile, res: Response) 
   }
 };
 
-// Obtener detalle de una entrega específica
 export const getEntregaPorId = async (req: Request, res: Response) => {
   try {
     const { entregaId } = req.params;
@@ -98,8 +94,9 @@ export const getEntregaPorId = async (req: Request, res: Response) => {
     }
 
     const entrega = await Entrega.findById(entregaId)
-      .populate('alumno', 'nombre apellido email')
+      .populate('alumno', 'nombreCompleto email')
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto');
+
 
     if (!entrega) return res.status(404).json({ message: "Entrega no encontrada" });
 

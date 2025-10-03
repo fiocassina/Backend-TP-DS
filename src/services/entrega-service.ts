@@ -1,54 +1,41 @@
-// src/app/services/entrega.service.ts
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { Entrega } from '../models/entrega-interface';
+import Entrega, { Entrega as IEntrega } from "../model/entrega-model";
 
-@Injectable({
-  providedIn: 'root'
-})
-export class EntregaService {
-  private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:3000/api/entregas';
-
-  // Método privado para no repetir token y headers
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.warn('EntregaService: no se encontró token en localStorage');
-      // devolver headers vacíos en vez de lanzar: así la petición se hace y el backend responde 401 si corresponde
-      return new HttpHeaders();
+class EntregaService {
+  async getEntregasByProyecto(idProyecto: string): Promise<IEntrega[]> {
+    try {
+      return await Entrega.find({ proyecto: idProyecto })
+        .populate("alumno", "nombre apellido")   
+        .populate("proyecto", "titulo")          
+        .exec();
+    } catch (error: any) {
+      throw new Error(`Error al obtener entregas: ${error.message}`);
     }
-    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
   }
 
-  // ----------------- ENTREGAS -----------------
-
-  crearEntrega(formData: FormData): Observable<Entrega> {
-    return this.http.post<Entrega>(this.baseUrl, formData, { headers: this.getAuthHeaders() });
+  async createEntrega(data: Partial<IEntrega>): Promise<IEntrega> {
+    try {
+      const entrega = new Entrega(data);
+      return await entrega.save();
+    } catch (error: any) {
+      throw new Error(`Error al crear la entrega: ${error.message}`);
+    }
   }
 
-  obtenerEntregas(proyectoId: string): Observable<Entrega[]> {
-    return this.http.get<Entrega[]>(`${this.baseUrl}/proyecto/${proyectoId}`, { headers: this.getAuthHeaders() });
+  async updateEntrega(idEntrega: string, data: Partial<IEntrega>): Promise<IEntrega | null> {
+    try {
+      return await Entrega.findByIdAndUpdate(idEntrega, data, { new: true }).exec();
+    } catch (error: any) {
+      throw new Error(`Error al actualizar la entrega: ${error.message}`);
+    }
   }
 
-  obtenerEntregasPorAlumno(): Observable<Entrega[]> {
-    return this.http.get<Entrega[]>(`${this.baseUrl}/alumno/mis-entregas`, { headers: this.getAuthHeaders() });
-  }
-
-  obtenerEntregaPorId(entregaId: string): Observable<Entrega> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<Entrega>(`${this.baseUrl}/${entregaId}`, { headers });
-  }
-
-  // ----------------- CORRECCIONES -----------------
-
-  crearCorreccion(entregaId: string, nota: number, comentario: string): Observable<any> {
-    const body = { entrega: entregaId, nota, comentario };
-    return this.http.post(`${this.baseUrl.replace('entregas', 'correcciones')}`, body, { headers: this.getAuthHeaders() });
-  }
-
-  obtenerCorrecciones(entregaId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl.replace('entregas', 'correcciones')}/entrega/${entregaId}`, { headers: this.getAuthHeaders() });
+  async deleteEntrega(idEntrega: string): Promise<IEntrega | null> {
+    try {
+      return await Entrega.findByIdAndDelete(idEntrega).exec();
+    } catch (error: any) {
+      throw new Error(`Error al eliminar la entrega: ${error.message}`);
+    }
   }
 }
+
+export default new EntregaService();

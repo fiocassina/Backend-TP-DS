@@ -42,11 +42,9 @@ export const getMaterialesPorClase = async (req: Request, res: Response): Promis
 };
 
 export const createMaterial = async (req: RequestWithFile, res: Response): Promise<void> => {
-  // ✅ Corregido: Los nombres de los campos en el backend deben coincidir con los del frontend
   const { nombre, tipoId, claseId, url } = req.body;
   const file = req.file;
 
-  // ✅ Corregido: Verificar que los campos requeridos estén presentes
   if (!nombre || !tipoId || !claseId) {
     res.status(400).json({ message: 'Nombre, tipo y clase son requeridos' });
     return;
@@ -59,12 +57,10 @@ export const createMaterial = async (req: RequestWithFile, res: Response): Promi
       clase: claseId,
     };
 
-    // Si hay un archivo, usamos sus datos de Multer
     if (file) {
       materialData.rutaArchivo = file.path;
       materialData.nombreArchivo = file.originalname;
     } else if (url) {
-      // Si no hay archivo, verificamos si hay una URL
       materialData.url = url;
     } else {
       res.status(400).json({ message: 'Se requiere un archivo o una URL' });

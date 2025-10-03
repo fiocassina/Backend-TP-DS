@@ -4,9 +4,8 @@ import { crearProyecto, getProyectosAlumno, getProyectosPorClase } from "../cont
 
 const router = Router();
 
-router.post("/", auth, crearProyecto); // Crear proyecto (solo profesor)
-router.get("/mis-proyectos", auth, getProyectosAlumno); // Ver proyectos de alumno
-// proyecto-routes.ts
+router.post("/", auth, crearProyecto); 
+router.get("/mis-proyectos", auth, getProyectosAlumno); 
 router.get("/clase/:claseId", auth, getProyectosPorClase);
 
 export default router;

@@ -16,8 +16,6 @@ export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => 
     throw new Error("Clase no encontrada");
   }
 
-  // La lógica de inicializar entregas ya no es necesaria aquí
-  // ya que las entregas son documentos separados.
 
   const nuevoProyecto = new Proyecto({
     nombre: data.nombre,
@@ -25,8 +23,8 @@ export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => 
     clase: new mongoose.Types.ObjectId(data.claseId),
     tipoProyecto: {
       _id: new mongoose.Types.ObjectId(data.tipoProyectoId),
-      nombre: data.tipoProyectoId, // Puedes ajustar esto para buscar el nombre real
-      descripcion: '' // Puedes ajustar esto para buscar la descripción real
+      nombre: data.tipoProyectoId,
+      descripcion: '' 
     },
     fechaEntrega: data.fechaEntrega,
   });
@@ -35,8 +33,6 @@ export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => 
 };
 
 export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
-  // Ahora la consulta es más simple, ya que el proyecto no contiene las entregas.
-  // Buscamos las clases a las que pertenece el alumno y luego los proyectos de esas clases.
   const clasesDelAlumno = await Clase.find({ alumnos: new mongoose.Types.ObjectId(alumnoId) }).select('_id');
   const idsDeClases = clasesDelAlumno.map(clase => clase._id);
 
@@ -46,7 +42,6 @@ export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto
   return proyectos;
 };
 
-// Puedes añadir una función para obtener un proyecto por su ID si lo necesitas
 export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
   return await Proyecto.findById(proyectoId).populate("clase tipoProyecto");
 };
