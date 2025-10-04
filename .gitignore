@@ -13,6 +13,8 @@ coverage
 
 .env
 
+pnpm-lock.yaml
+
 .DS_Store
 Thumbs.db
 
