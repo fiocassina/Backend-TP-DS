@@ -106,3 +106,49 @@ export const getEntregaPorId = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Error al obtener la entrega" });
   }
 };
+
+export const getReporteAprobadas = async (req: Request, res: Response) => {
+    // 1. Obtener los parámetros necesarios (solo proyectoId)
+    const { proyectoId } = req.query;
+
+    if (!proyectoId || typeof proyectoId !== 'string' || !mongoose.Types.ObjectId.isValid(proyectoId)) {
+        return res.status(400).json({ msg: 'Falta o es inválido el parámetro: proyectoId es obligatorio.' });
+    }
+
+    try {
+        const criteriosBusqueda = {
+            proyecto: proyectoId, 
+            'correccion.nota': { $gte: 6 }, 
+        };
+
+        const entregasAprobadas = (await Entrega.find(criteriosBusqueda)
+            .select('fechaEntrega correccion proyecto alumno')
+            .populate({
+                path: 'alumno',
+                select: 'nombreCompleto'
+            })
+            .populate({
+                path: 'proyecto',
+                select: 'nombre'
+            })
+            .populate('correccion')
+            .sort({ fechaEntrega: -1 })) as any[]; 
+
+        const reporteData = entregasAprobadas.map((entrega: any) => ({
+            id: entrega._id,
+            proyectoNombre: entrega.proyecto.nombre,
+            alumnoNombre: entrega.alumno.nombreCompleto,
+            nota: entrega.correccion ? entrega.correccion.nota : null, 
+            fechaEntrega: entrega.fechaEntrega,
+            fechaCorreccion: entrega.correccion ? entrega.correccion.fechaCorreccion : null,
+        }));
+
+        res.status(200).json(reporteData); //devolvemos la lista al front
+
+    } catch (error) {
+        console.error('Error al generar el reporte de entregas:', error);
+        res.status(500).json({ 
+            msg: 'Error interno del servidor. Error al buscar entregas aprobadas.' 
+        });
+    }
+};

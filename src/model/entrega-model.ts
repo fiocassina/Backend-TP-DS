@@ -6,6 +6,7 @@ export interface Entrega extends Document {
   comentario?: string;
   archivoUrl?: string;
   fechaEntrega: Date;
+  correccion?: mongoose.Types.ObjectId;
 }
 
 const entregaSchema = new Schema<Entrega>({
@@ -29,7 +30,13 @@ const entregaSchema = new Schema<Entrega>({
   fechaEntrega: {
     type: Date,
     default: Date.now
-  }
+  },
+  correccion: {
+    type: Schema.Types.ObjectId,
+    ref: "Correccion", 
+    required: false, 
+    unique: true 
+}
 }, {
   timestamps: true 
 });

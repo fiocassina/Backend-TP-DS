@@ -1,11 +1,12 @@
 import { Router } from "express";
 import multer from "multer";
-import { auth } from "../middleware/auth.js";
+import { auth, checkRole} from "../middleware/auth.js";
 import { 
   crearEntrega, 
   getEntregasPorProyecto, 
   getEntregasPorAlumno, 
-  getEntregaPorId 
+  getEntregaPorId,
+  getReporteAprobadas
 } from "../controllers/entrega-controllers.js";
 
 const router = Router();
@@ -19,5 +20,7 @@ router.get("/proyecto/:proyectoId", auth, getEntregasPorProyecto);
 router.get("/alumno/mis-entregas", auth, getEntregasPorAlumno);
 
 router.get("/:entregaId", auth, getEntregaPorId);
+
+router.get("/reporte/aprobadas", auth, checkRole('profesor'), getReporteAprobadas)
 
 export default router;
