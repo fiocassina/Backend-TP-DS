@@ -1,3 +1,4 @@
+import { getReporteAprobadas } from "../controllers/entrega-controllers";
 import Entrega, { Entrega as IEntrega } from "../model/entrega-model";
 
 class EntregaService {
@@ -11,7 +12,7 @@ class EntregaService {
       throw new Error(`Error al obtener entregas: ${error.message}`);
     }
   }
-
+  
   async createEntrega(data: Partial<IEntrega>): Promise<IEntrega> {
     try {
       const entrega = new Entrega(data);

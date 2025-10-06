@@ -10,7 +10,6 @@ interface RequestWithFile extends Request {
 
 export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   try {
-    console.log('[entregas] crearEntrega - body:', req.body, 'file:', !!req.file);
     const alumnoId = req.user?.id;
     if (!alumnoId) return res.status(401).json({ message: "Usuario no autenticado" });
 
@@ -44,8 +43,6 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
 export const getEntregasPorProyecto = async (req: Request, res: Response) => {
   try {
     const { proyectoId } = req.params;
-    console.log('[entregas] getEntregasPorProyecto - params:', req.params);
-
     if (!proyectoId) return res.status(400).json({ message: "Falta el ID del proyecto" });
     if (!mongoose.Types.ObjectId.isValid(proyectoId)) {
       console.warn('[entregas] proyectoId inválido:', proyectoId);
@@ -56,10 +53,6 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
       .populate('alumno', 'nombreCompleto email')
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
       .lean();
-
-
-    console.log(`[entregas] encontrados: ${entregas.length} entregas para proyecto ${proyectoId}`);
-
     if (req.query.wrap === 'true') return res.status(200).json({ data: entregas });
 
     return res.status(200).json(entregas);
@@ -108,47 +101,48 @@ export const getEntregaPorId = async (req: Request, res: Response) => {
 };
 
 export const getReporteAprobadas = async (req: Request, res: Response) => {
-    // 1. Obtener los parámetros necesarios (solo proyectoId)
-    const { proyectoId } = req.query;
+  const { proyectoId } = req.query;
 
-    if (!proyectoId || typeof proyectoId !== 'string' || !mongoose.Types.ObjectId.isValid(proyectoId)) {
-        return res.status(400).json({ msg: 'Falta o es inválido el parámetro: proyectoId es obligatorio.' });
-    }
+  if (!proyectoId || typeof proyectoId !== 'string' || !mongoose.Types.ObjectId.isValid(proyectoId)) {
+    return res.status(400).json({ msg: 'Falta o es inválido el parámetro: proyectoId es obligatorio.' });
+  }
 
-    try {
-        const criteriosBusqueda = {
-            proyecto: proyectoId, 
-            'correccion.nota': { $gte: 6 }, 
-        };
+  try {
+    const criteriosBusqueda = {
+      proyecto: proyectoId,
+      estado: 'aprobada', 
+    };
 
-        const entregasAprobadas = (await Entrega.find(criteriosBusqueda)
-            .select('fechaEntrega correccion proyecto alumno')
-            .populate({
-                path: 'alumno',
-                select: 'nombreCompleto'
-            })
-            .populate({
-                path: 'proyecto',
-                select: 'nombre'
-            })
-            .populate('correccion')
-            .sort({ fechaEntrega: -1 })) as any[]; 
+    const entregasAprobadas = await Entrega.find(criteriosBusqueda)
+      .select('fechaEntrega correccion proyecto alumno')
+      .populate({
+        path: 'alumno',
+        select: 'nombreCompleto'
+      })
+      .populate({
+        path: 'proyecto',
+        select: 'nombre'
+      })
+      .populate('correccion')
+      .sort({ fechaEntrega: -1 });
 
-        const reporteData = entregasAprobadas.map((entrega: any) => ({
-            id: entrega._id,
-            proyectoNombre: entrega.proyecto.nombre,
-            alumnoNombre: entrega.alumno.nombreCompleto,
-            nota: entrega.correccion ? entrega.correccion.nota : null, 
-            fechaEntrega: entrega.fechaEntrega,
-            fechaCorreccion: entrega.correccion ? entrega.correccion.fechaCorreccion : null,
-        }));
+    const reporteData = entregasAprobadas.map((entrega: any) => ({
+      id: entrega._id,
+      proyectoNombre: entrega.proyecto.nombre,
+      alumnoNombre: entrega.alumno.nombreCompleto,
+      nota: entrega.correccion ? entrega.correccion.nota : null,
+      fechaEntrega: entrega.fechaEntrega,
+      fechaCorreccion: entrega.correccion ? entrega.correccion.fechaCorreccion : null,
+      comentarioCorreccion: entrega.correccion ? entrega.correccion.comentario : null, 
 
-        res.status(200).json(reporteData); //devolvemos la lista al front
+    }));
 
-    } catch (error) {
-        console.error('Error al generar el reporte de entregas:', error);
-        res.status(500).json({ 
-            msg: 'Error interno del servidor. Error al buscar entregas aprobadas.' 
-        });
-    }
+    res.status(200).json(reporteData);
+
+  } catch (error) {
+    console.error('Error al generar el reporte de entregas:', error);
+    res.status(500).json({
+      msg: 'Error interno del servidor. Error al buscar entregas aprobadas.'
+    });
+  }
 };

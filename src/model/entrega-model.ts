@@ -1,12 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+// Definimos los estados posibles para mayor claridad y autocompletado
+export type EstadoEntrega = 'pendiente' | 'aprobada' | 'desaprobada';
+
 export interface Entrega extends Document {
-  proyecto: mongoose.Types.ObjectId;  
-  alumno: mongoose.Types.ObjectId;   
+  proyecto: mongoose.Types.ObjectId;
+  alumno: mongoose.Types.ObjectId;
   comentario?: string;
   archivoUrl?: string;
   fechaEntrega: Date;
   correccion?: mongoose.Types.ObjectId;
+  estado: EstadoEntrega; 
 }
 
 const entregaSchema = new Schema<Entrega>({
@@ -33,12 +37,18 @@ const entregaSchema = new Schema<Entrega>({
   },
   correccion: {
     type: Schema.Types.ObjectId,
-    ref: "Correccion", 
-    required: false, 
-    unique: true 
-}
+    ref: "Correccion",
+    required: false,
+    unique: true
+  },
+  estado: {
+    type: String,
+    required: true,
+    enum: ['pendiente', 'aprobada', 'desaprobada'],
+    default: 'pendiente' // Por defecto, una entrega siempre está pendiente
+  }
 }, {
-  timestamps: true 
+  timestamps: true
 });
 
 export default mongoose.model<Entrega>("Entrega", entregaSchema);
