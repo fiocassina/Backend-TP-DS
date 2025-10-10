@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import Correccion, { ICorreccion } from "../model/correccion-model.js";
 import Entrega from "../model/entrega-model.js"; // <-- IMPORTAR EL MODELO ENTREGA
 
@@ -21,7 +22,7 @@ export const crearCorreccion = async (data: {
 
   const nuevoEstado = data.nota >= 6 ? 'aprobada' : 'desaprobada';
 
-  entregaAsociada.correccion = nuevaCorreccion._id;
+  entregaAsociada.correccion = nuevaCorreccion._id as Types.ObjectId;
   entregaAsociada.estado = nuevoEstado;
   await entregaAsociada.save();
 
