@@ -2,11 +2,48 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Entrega from "../model/entrega-model.js";
+import Proyecto from "../model/proyecto-model.js";
+import Clase from "../model/clase-model.js";
+
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
   user?: { id: string };
 }
+
+
+export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Response) => {
+  try {
+    const alumnoId = req.user?.id;
+    if (!alumnoId) return res.status(401).json({ message: "Usuario no autenticado" });
+
+    // 1. Traer todas las clases donde el alumno está inscripto
+    const clases = await Clase.find({ alumnos: alumnoId }).select('_id').lean();
+    const claseIds = clases.map(c => c._id);
+
+    // 2. Buscar proyectos de esas clases, con populate
+    const proyectos = await Proyecto.find({ clase: { $in: claseIds } })
+      .populate('clase', 'nombre')
+      .populate('tipoProyecto', 'nombre')
+      .lean();
+
+    // 3. Buscar las entregas del alumno
+    const entregasAlumno = await Entrega.find({ alumno: alumnoId }).select('proyecto').lean();
+    const proyectosEntregadosIds = entregasAlumno.map(e => e.proyecto.toString());
+
+    // 4. Filtrar los pendientes (fecha > hoy y no entregados)
+    const hoy = new Date();
+    const proyectosPendientes = proyectos.filter(p =>
+      !proyectosEntregadosIds.includes(p._id.toString()) && p.fechaEntrega > hoy
+    );
+
+    res.status(200).json(proyectosPendientes);
+  } catch (error) {
+    console.error("Error al obtener proyectos pendientes:", error);
+    res.status(500).json({ error: "Error al obtener proyectos pendientes del alumno" });
+  }
+};
+
 
 export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   try {
@@ -110,7 +147,7 @@ export const getReporteAprobadas = async (req: Request, res: Response) => {
   try {
     const criteriosBusqueda = {
       proyecto: proyectoId,
-      estado: 'aprobada', 
+      estado: 'aprobada',
     };
 
     const entregasAprobadas = await Entrega.find(criteriosBusqueda)
@@ -133,7 +170,7 @@ export const getReporteAprobadas = async (req: Request, res: Response) => {
       nota: entrega.correccion ? entrega.correccion.nota : null,
       fechaEntrega: entrega.fechaEntrega,
       fechaCorreccion: entrega.correccion ? entrega.correccion.fechaCorreccion : null,
-      comentarioCorreccion: entrega.correccion ? entrega.correccion.comentario : null, 
+      comentarioCorreccion: entrega.correccion ? entrega.correccion.comentario : null,
 
     }));
 

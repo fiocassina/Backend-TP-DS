@@ -6,7 +6,8 @@ import {
   getEntregasPorProyecto, 
   getEntregasPorAlumno, 
   getEntregaPorId,
-  getReporteAprobadas
+  getReporteAprobadas,
+  getProyectosPendientesAlumno
 } from "../controllers/entrega-controllers.js";
 
 const router = Router();
@@ -21,6 +22,9 @@ router.get("/alumno/mis-entregas", auth, getEntregasPorAlumno);
 
 router.get("/:entregaId", auth, getEntregaPorId);
 
-router.get("/reporte/aprobadas", auth, checkRole('profesor'), getReporteAprobadas)
+router.get("/reporte/aprobadas", auth, checkRole('profesor'), getReporteAprobadas);
+
+router.get('/pendientes/alumno', auth, getProyectosPendientesAlumno);
+
 
 export default router;
