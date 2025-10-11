@@ -134,9 +134,11 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
   try {
     const claseActualizada = await service.update(req.params.id, req.body);
     if (claseActualizada) {
-      res.status(200).json({ message: 'Clase actualizada', data: claseActualizada });
+      const clasePopulada = await Clase.findById(claseActualizada._id).populate('profesorId', 'nombreCompleto');
+
+      res.status(200).json({ message: 'Clase actualizada', data: clasePopulada });
     } else {
-      res.status(404).json({ message: ' Clase no encontrada' });
+      res.status(404).json({ message: 'Clase no encontrada' });
     }
   } catch (error) {
     console.error(`Error en controller updateClase con ID ${req.params.id}:`, error);
