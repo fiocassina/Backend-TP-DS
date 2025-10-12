@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import Usuario from '../model/usuario-model.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 interface RequestConUser extends Request {
   user?: { id: string };
@@ -23,7 +24,7 @@ export const login: RequestHandler = async (req, res, next) => {
     if (!passwordValido) {
       return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
     }
-    
+
     const token = jwt.sign({ id: usuario._id }, "clave-secreta", { expiresIn: "3h" });
 
     res.status(200).json({
@@ -42,10 +43,26 @@ export const login: RequestHandler = async (req, res, next) => {
 
 export const registrar = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const { email, ...restoDeDatos } = req.body;
+
+   
+    const usuarioExistente = await Usuario.findOne({ email });
+
+
+    if (usuarioExistente) {
+      return res.status(409).json({
+        mensaje: 'El email ya ha sido registrado. Por favor, usa otro correo.'
+      });
+    }
+
+
     const nuevoUsuario = new Usuario(req.body);
     await nuevoUsuario.save();
+
+
     res.status(201).json({ mensaje: 'Usuario registrado correctamente' });
   } catch (error) {
+
     next(error);
   }
 };
@@ -62,7 +79,7 @@ export const getPerfil = async (req: RequestConUser, res: Response) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    res.set('Cache-Control', 'no-store'); 
+    res.set('Cache-Control', 'no-store');
     res.status(200).json(usuario);
   } catch (error) {
     console.error('Error en getPerfil:', error);
@@ -95,5 +112,30 @@ export const desactivarPerfil = async (req: RequestConUser, res: Response) => {
     res.status(200).json({ mensaje: 'Usuario dado de baja correctamente' });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al dar de baja el usuario', error });
+  }
+};
+
+
+export const restablecerContrasena = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, contrasenaNueva } = req.body; 
+
+    
+    const usuario = await Usuario.findOne({ email });
+
+    if (!usuario) {
+ 
+      return res.status(404).json({ mensaje: 'El email no está registrado.' });
+    }
+
+   
+    usuario.password = contrasenaNueva; 
+    await usuario.save();
+
+    res.status(200).json({ mensaje: 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.' });
+
+  } catch (error) {
+    console.error('Error al restablecer contraseña:', error);
+    next(error);
   }
 };
