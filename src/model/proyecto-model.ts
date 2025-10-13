@@ -5,11 +5,7 @@ export interface IProyecto extends Document {
   nombre: string;
   descripcion?: string;
   clase: Types.ObjectId | IClase;
-  tipoProyecto: {
-    _id: Types.ObjectId;
-    nombre: string;
-    descripcion?: string;
-  };
+  tipoProyecto: Types.ObjectId;
   fechaCreacion: Date;
   fechaEntrega: Date;
 }
@@ -18,11 +14,7 @@ const proyectoSchema = new Schema<IProyecto>({
   nombre: { type: String, required: true },
   descripcion: { type: String },
   clase: { type: Schema.Types.ObjectId, ref: "Clase", required: true },
-  tipoProyecto: {
-    _id: { type: Schema.Types.ObjectId, required: true },
-    nombre: { type: String, required: true },
-    descripcion: { type: String }
-  },
+  tipoProyecto: { type: Schema.Types.ObjectId, ref: "TipoProyecto", required: true }, // ✅ ref agregado
   fechaCreacion: { type: Date, default: Date.now },
   fechaEntrega: { type: Date, required: true }
 });
