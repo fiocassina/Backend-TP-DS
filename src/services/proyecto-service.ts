@@ -11,7 +11,7 @@ interface ProyectoInput {
   fechaEntrega: Date;
 }
 
-// 🟢 Crear un nuevo proyecto
+
 export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => {
   const clase = await Clase.findById(data.claseId);
   if (!clase) {
@@ -27,14 +27,27 @@ export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => 
     nombre: data.nombre,
     descripcion: data.descripcion,
     clase: new mongoose.Types.ObjectId(data.claseId),
-    tipoProyecto: new mongoose.Types.ObjectId(data.tipoProyectoId), // ✅ ahora referencia real
+    tipoProyecto: new mongoose.Types.ObjectId(data.tipoProyectoId), 
     fechaEntrega: data.fechaEntrega,
   });
 
   return await nuevoProyecto.save();
 };
 
-// 🟢 Obtener proyectos por clase
+export const updateProyecto = async (proyectoId: string, data: Partial<ProyectoInput>): Promise<IProyecto | null> => {
+  return await Proyecto.findByIdAndUpdate(proyectoId, data, { new: true });
+};
+
+export const deleteProyecto = async (proyectoId: string): Promise<IProyecto | null> => {
+  return await Proyecto.findByIdAndDelete(proyectoId);
+};
+
+export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
+  return await Proyecto.findById(proyectoId)
+    .populate("clase")
+    .populate("tipoProyecto");
+};
+
 export const getProyectosPorClase = async (claseId: string): Promise<IProyecto[]> => {
   const proyectos = await Proyecto.find({ clase: claseId })
     .populate("tipoProyecto")
@@ -43,7 +56,7 @@ export const getProyectosPorClase = async (claseId: string): Promise<IProyecto[]
   return proyectos;
 };
 
-// 🟢 Obtener proyectos del alumno
+
 export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
   const clasesDelAlumno = await Clase.find({ alumnos: new mongoose.Types.ObjectId(alumnoId) }).select("_id");
   const idsDeClases = clasesDelAlumno.map((clase) => clase._id);
@@ -55,9 +68,5 @@ export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto
   return proyectos;
 };
 
-// 🟢 Obtener un proyecto por ID
-export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
-  return await Proyecto.findById(proyectoId)
-    .populate("clase")
-    .populate("tipoProyecto");
-};
+
+
