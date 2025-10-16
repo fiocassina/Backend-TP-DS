@@ -9,6 +9,7 @@ interface RequestConUser extends Request {
 
 
 export const getMisClases = async (req: RequestConUser, res: Response) => {
+
   try {
     const userId = req.user?.id;
 
@@ -17,10 +18,10 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-    // Clases como profesor
+
     const clasesComoProfe = await Clase.find({ profesorId: userId });
 
-    // Clases como alumno
+   
     const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');  //el populate funciona como si hicieramos un "JOIN" en SQL, es p mostrar nombre y apellido del profe
 
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
@@ -31,6 +32,7 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 };
 
 export const getClaseById = async (req: Request, res: Response) => {
+  // FUNCIÓN ORIGINAL
   try {
     const clase = await Clase.findById(req.params.id).populate('profesorId', 'nombreCompleto');
     if (clase) {
@@ -65,9 +67,17 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
       return;
     }
 
+
+    if (clase.profesorId.toString() === userId) {
+      return res.status(403).json({
+        mensaje: "No puedes ingresar a esta clase porque eres el profesor."
+      });
+    }
+
+
     const userIdAsObjectId = new mongoose.Types.ObjectId(userId);
 
-    // Verificar si el alumno ya está inscrito
+
     if (clase.alumnos.includes(userIdAsObjectId)) {
       res.status(400).json({ mensaje: "Ya estás inscrito en esta clase" });
       return;
@@ -84,6 +94,7 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
 };
 
 export const getClaseByClave = async (req: Request, res: Response): Promise<void> => {
+
   const { clave } = req.query;
 
   if (!clave || typeof clave !== 'string') {
@@ -104,6 +115,7 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
   }
 };
 export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
+ 
   if (!req.body.nombre || !req.body.materia) {
     res.status(400).json({ message: 'Nombre y materia son requeridos' });
     return;
@@ -120,7 +132,7 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
 
     const nuevaClase = await service.create({
       ...req.body,
-      profesorId: new mongoose.Types.ObjectId(userId) 
+      profesorId: new mongoose.Types.ObjectId(userId)
     });
 
     res.status(201).json({ message: 'Clase creada', data: nuevaClase });
@@ -131,6 +143,7 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
 };
 
 export const updateClase = async (req: Request, res: Response): Promise<void> => {
+  // FUNCIÓN ORIGINAL
   try {
     const claseActualizada = await service.update(req.params.id, req.body);
     if (claseActualizada) {
@@ -147,6 +160,7 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
 };
 
 export const deleteClase = async (req: Request, res: Response): Promise<void> => {
+
   try {
     const claseEliminada = await service.remove(req.params.id);
     if (claseEliminada) {
