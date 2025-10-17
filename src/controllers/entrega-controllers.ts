@@ -17,25 +17,26 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
     const alumnoId = req.user?.id;
     if (!alumnoId) return res.status(401).json({ message: "Usuario no autenticado" });
 
-    // 1. Traer todas las clases donde el alumno está inscripto
+    //IDs de las entregas que el alumno ya hizo.
+    const entregasAlumno = await Entrega.find({ alumno: alumnoId }).select('proyecto').lean();
+    const proyectosEntregadosIds = entregasAlumno.map(e => e.proyecto);
+
+    // IDs de las clases del alumno.
     const clases = await Clase.find({ alumnos: alumnoId }).select('_id').lean();
     const claseIds = clases.map(c => c._id);
-
-    // 2. Buscar proyectos de esas clases, con populate
-    const proyectos = await Proyecto.find({ clase: { $in: claseIds } })
-      .populate('clase', 'nombre')
-      .populate('tipoProyecto', 'nombre')
-      .lean();
-
-    // 3. Buscar las entregas del alumno
-    const entregasAlumno = await Entrega.find({ alumno: alumnoId }).select('proyecto').lean();
-    const proyectosEntregadosIds = entregasAlumno.map(e => e.proyecto.toString());
-
-    // 4. Filtrar los pendientes (fecha > hoy y no entregados)
+    
     const hoy = new Date();
-    const proyectosPendientes = proyectos.filter(p =>
-      !proyectosEntregadosIds.includes(p._id.toString()) && p.fechaEntrega > hoy
-    );
+    hoy.setHours(0, 0, 0, 0);
+
+    // Búsqueda en la BD con todos los filtros 
+    const proyectosPendientes = await Proyecto.find({
+      clase: { $in: claseIds },
+      _id: { $nin: proyectosEntregadosIds },
+      fechaEntrega: { $gte: hoy } 
+    })
+    .populate('clase', 'nombre')
+    .populate('tipoProyecto', 'nombre')
+    .lean();
 
     res.status(200).json(proyectosPendientes);
   } catch (error) {
@@ -43,7 +44,6 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
     res.status(500).json({ error: "Error al obtener proyectos pendientes del alumno" });
   }
 };
-
 
 export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   try {
