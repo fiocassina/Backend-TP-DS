@@ -1,16 +1,13 @@
-// controllers/entrega-controllers.ts
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Entrega from "../model/entrega-model.js";
 import Proyecto from "../model/proyecto-model.js";
 import Clase from "../model/clase-model.js";
 
-
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
   user?: { id: string };
 }
-
 
 export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Response) => {
   try {
@@ -34,7 +31,7 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
       _id: { $nin: proyectosEntregadosIds },
       fechaEntrega: { $gte: hoy } 
     })
-    .populate('clase', 'nombre')
+    .populate('clase', 'nombre _id')
     .populate('tipoProyecto', 'nombre')
     .lean();
 
@@ -76,7 +73,6 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   }
 };
 
-
 export const getEntregasPorProyecto = async (req: Request, res: Response) => {
   try {
     const { proyectoId } = req.params;
@@ -89,6 +85,7 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
     const entregas = await Entrega.find({ proyecto: proyectoId })
       .populate('alumno', 'nombreCompleto email')
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('correccion') 
       .lean();
     if (req.query.wrap === 'true') return res.status(200).json({ data: entregas });
 
@@ -106,6 +103,7 @@ export const getEntregasPorAlumno = async (req: RequestWithFile, res: Response) 
 
     const entregas = await Entrega.find({ alumno: alumnoId })
       .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('correccion') 
       .lean();
 
     res.status(200).json(entregas);
@@ -125,8 +123,8 @@ export const getEntregaPorId = async (req: Request, res: Response) => {
 
     const entrega = await Entrega.findById(entregaId)
       .populate('alumno', 'nombreCompleto email')
-      .populate('proyecto', 'nombre fechaEntrega tipoProyecto');
-
+      .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('correccion'); 
 
     if (!entrega) return res.status(404).json({ message: "Entrega no encontrada" });
 
