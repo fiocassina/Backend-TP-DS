@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import * as correccionService from "../services/correccion-service.js";
 
-// Crear corrección
 export const crearCorreccion = async (req: Request, res: Response) => {
   try {
     const { entrega, nota, comentario } = req.body;

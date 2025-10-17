@@ -31,7 +31,7 @@ export const checkRole = (requiredRole: string) => {
         }
 
         if (requiredRole !== 'profesor') {
-             return res.status(403).json({ mensaje: "Acceso denegado. Rol no compatible con esta verificación." });
+            return res.status(403).json({ mensaje: "Acceso denegado. Rol no compatible con esta verificación." });
         }
 
         try {

@@ -21,9 +21,8 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 
     const clasesComoProfe = await Clase.find({ profesorId: userId });
 
-   
-    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');  //el populate funciona como si hicieramos un "JOIN" en SQL, es p mostrar nombre y apellido del profe
-
+  
+    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto'); 
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
     console.error(error);
@@ -32,7 +31,6 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 };
 
 export const getClaseById = async (req: Request, res: Response) => {
-  // FUNCIÓN ORIGINAL
   try {
     const clase = await Clase.findById(req.params.id).populate('profesorId', 'nombreCompleto');
     if (clase) {
@@ -115,7 +113,7 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
   }
 };
 export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
- 
+
   if (!req.body.nombre || !req.body.materia) {
     res.status(400).json({ message: 'Nombre y materia son requeridos' });
     return;

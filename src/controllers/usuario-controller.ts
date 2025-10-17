@@ -45,7 +45,7 @@ export const registrar = async (req: Request, res: Response, next: NextFunction)
   try {
     const { email, ...restoDeDatos } = req.body;
 
-   
+  
     const usuarioExistente = await Usuario.findOne({ email });
 
 
@@ -118,7 +118,6 @@ export const desactivarPerfil = async (req: RequestConUser, res: Response) => {
 
 export const restablecerContrasena = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 1. Ahora recibimos tres campos del frontend
     const { email, contrasenaActual, contrasenaNueva } = req.body; 
 
     if (!email || !contrasenaActual || !contrasenaNueva) {

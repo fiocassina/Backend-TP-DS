@@ -14,7 +14,7 @@ const proyectoSchema = new Schema<IProyecto>({
   nombre: { type: String, required: true },
   descripcion: { type: String },
   clase: { type: Schema.Types.ObjectId, ref: "Clase", required: true },
-  tipoProyecto: { type: Schema.Types.ObjectId, ref: "TipoProyecto", required: true }, // ✅ ref agregado
+  tipoProyecto: { type: Schema.Types.ObjectId, ref: "TipoProyecto", required: true },
   fechaCreacion: { type: Date, default: Date.now },
   fechaEntrega: { type: Date, required: true }
 });
