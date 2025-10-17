@@ -118,21 +118,29 @@ export const desactivarPerfil = async (req: RequestConUser, res: Response) => {
 
 export const restablecerContrasena = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, contrasenaNueva } = req.body; 
+    // 1. Ahora recibimos tres campos del frontend
+    const { email, contrasenaActual, contrasenaNueva } = req.body; 
 
-    
+    if (!email || !contrasenaActual || !contrasenaNueva) {
+      return res.status(400).json({ mensaje: 'Todos los campos son requeridos.' });
+    }
+
     const usuario = await Usuario.findOne({ email });
 
     if (!usuario) {
- 
       return res.status(404).json({ mensaje: 'El email no está registrado.' });
     }
 
-   
+    const esCorrecta = await bcrypt.compare(contrasenaActual, usuario.password);
+
+    if (!esCorrecta) {
+      return res.status(401).json({ mensaje: 'La contraseña actual es incorrecta.' });
+    }
+    
     usuario.password = contrasenaNueva; 
     await usuario.save();
 
-    res.status(200).json({ mensaje: 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.' });
+    res.status(200).json({ mensaje: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' });
 
   } catch (error) {
     console.error('Error al restablecer contraseña:', error);
