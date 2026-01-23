@@ -25,7 +25,11 @@ export const login: RequestHandler = async (req, res, next) => {
       return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
     }
 
-    const token = jwt.sign({ id: usuario._id }, "clave-secreta", { expiresIn: "3h" });
+   const token = jwt.sign(
+      { id: usuario._id, rol: usuario.rol }, 
+      process.env.JWT_SECRET || "clave-secreta", 
+      { expiresIn: "3h" }
+    );
 
     res.status(200).json({
       mensaje: 'Inicio de sesión exitoso',
@@ -33,7 +37,8 @@ export const login: RequestHandler = async (req, res, next) => {
       usuario: {
         id: usuario._id,
         nombreCompleto: usuario.nombreCompleto,
-        email: usuario.email
+        email: usuario.email,
+        rol: usuario.rol
       }
     });
   } catch (error) {

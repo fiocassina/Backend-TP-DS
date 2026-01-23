@@ -1,5 +1,5 @@
-import { Router, Request, Response } from 'express';
-import { auth } from '../middleware/auth.js';
+import { Router } from 'express';
+import { auth, esProfeDeLaClase, esMiembroDeLaClase } from '../middleware/auth.js'; 
 import {
   getMisClases,
   getClaseById,
@@ -12,12 +12,19 @@ import {
 const router = Router();
 
 
-router.get('/',auth, getMisClases);
-router.get('/:id', getClaseById);
-router.post('/',auth, createClase);
-router.put('/:id', updateClase); 
-router.patch('/:id', updateClase); 
-router.delete('/:id', deleteClase);
-router.post('/inscribir', auth, inscribirAlumno);
+router.get('/', auth, getMisClases);
+
+router.get('/:id', auth, esMiembroDeLaClase, getClaseById); 
+
+
+router.post('/', auth, createClase); 
+
+
+router.put('/:id', auth, esProfeDeLaClase, updateClase); 
+router.patch('/:id', auth, esProfeDeLaClase, updateClase); 
+router.delete('/:id', auth, esProfeDeLaClase, deleteClase);
+
+
+router.post('/inscribir', auth, inscribirAlumno); 
 
 export default router;

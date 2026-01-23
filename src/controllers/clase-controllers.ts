@@ -3,13 +3,13 @@ import * as service from '../services/clase-services.js';
 import Clase from '../model/clase-model.js';
 import mongoose from 'mongoose';
 
+
 interface RequestConUser extends Request {
   user?: { id: string };
 }
 
 
 export const getMisClases = async (req: RequestConUser, res: Response) => {
-
   try {
     const userId = req.user?.id;
 
@@ -21,14 +21,15 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 
     const clasesComoProfe = await Clase.find({ profesorId: userId });
 
-  
-    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto'); 
+    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');
+
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al obtener clases", error });
   }
 };
+
 
 export const getClaseById = async (req: Request, res: Response) => {
   try {
@@ -43,6 +44,66 @@ export const getClaseById = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error interno del servidor al obtener clase por ID' });
   }
 };
+
+
+export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
+  if (!req.body.nombre || !req.body.materia) {
+    res.status(400).json({ message: 'Nombre y materia son requeridos' });
+    return;
+  }
+
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ message: 'Usuario no autenticado' });
+    return;
+  }
+
+  try {
+
+    const nuevaClase = await service.create({
+      ...req.body,
+      profesorId: new mongoose.Types.ObjectId(userId), 
+      alumnos: [] 
+    });
+
+    res.status(201).json({ message: 'Clase creada', data: nuevaClase });
+  } catch (error) {
+    console.error("Error en controller createClase:", error);
+    res.status(500).json({ message: 'Error interno del servidor al crear clase' });
+  }
+};
+
+
+export const updateClase = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const claseActualizada = await service.update(req.params.id, req.body);
+    if (claseActualizada) {
+      const clasePopulada = await Clase.findById(claseActualizada._id).populate('profesorId', 'nombreCompleto');
+      res.status(200).json({ message: 'Clase actualizada', data: clasePopulada });
+    } else {
+      res.status(404).json({ message: 'Clase no encontrada' });
+    }
+  } catch (error) {
+    console.error(`Error en controller updateClase con ID ${req.params.id}:`, error);
+    res.status(500).json({ message: 'Error interno del servidor al actualizar clase' });
+  }
+};
+
+
+export const deleteClase = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const claseEliminada = await service.remove(req.params.id);
+    if (claseEliminada) {
+      res.status(200).json({ message: 'Clase eliminada', data: claseEliminada });
+    } else {
+      res.status(404).json({ message: 'Clase no encontrada' });
+    }
+  } catch (error) {
+    console.error(`Error en controller deleteClase con ID ${req.params.id}:`, error);
+    res.status(500).json({ message: 'Error interno del servidor al eliminar clase' });
+  }
+};
+
 
 export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
   try {
@@ -68,10 +129,9 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
 
     if (clase.profesorId.toString() === userId) {
       return res.status(403).json({
-        mensaje: "No puedes ingresar a esta clase porque eres el profesor."
+        mensaje: "No puedes inscribirte a esta clase porque eres el profesor titular."
       });
     }
-
 
     const userIdAsObjectId = new mongoose.Types.ObjectId(userId);
 
@@ -91,8 +151,8 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
   }
 };
 
-export const getClaseByClave = async (req: Request, res: Response): Promise<void> => {
 
+export const getClaseByClave = async (req: Request, res: Response): Promise<void> => {
   const { clave } = req.query;
 
   if (!clave || typeof clave !== 'string') {
@@ -110,64 +170,5 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
   } catch (error) {
     console.error("Error en controller getClaseByClave:", error);
     res.status(500).json({ message: 'Error interno del servidor al buscar clase' });
-  }
-};
-export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
-
-  if (!req.body.nombre || !req.body.materia) {
-    res.status(400).json({ message: 'Nombre y materia son requeridos' });
-    return;
-  }
-
-  const userId = req.user?.id;
-  if (!userId) {
-    res.status(401).json({ message: 'Usuario no autenticado' });
-    return;
-  }
-
-  try {
-
-
-    const nuevaClase = await service.create({
-      ...req.body,
-      profesorId: new mongoose.Types.ObjectId(userId)
-    });
-
-    res.status(201).json({ message: 'Clase creada', data: nuevaClase });
-  } catch (error) {
-    console.error("Error en controller createClase:", error);
-    res.status(500).json({ message: 'Error interno del servidor al crear clase' });
-  }
-};
-
-export const updateClase = async (req: Request, res: Response): Promise<void> => {
-  // FUNCIÓN ORIGINAL
-  try {
-    const claseActualizada = await service.update(req.params.id, req.body);
-    if (claseActualizada) {
-      const clasePopulada = await Clase.findById(claseActualizada._id).populate('profesorId', 'nombreCompleto');
-
-      res.status(200).json({ message: 'Clase actualizada', data: clasePopulada });
-    } else {
-      res.status(404).json({ message: 'Clase no encontrada' });
-    }
-  } catch (error) {
-    console.error(`Error en controller updateClase con ID ${req.params.id}:`, error);
-    res.status(500).json({ message: 'Error interno del servidor al actualizar clase' });
-  }
-};
-
-export const deleteClase = async (req: Request, res: Response): Promise<void> => {
-
-  try {
-    const claseEliminada = await service.remove(req.params.id);
-    if (claseEliminada) {
-      res.status(200).json({ message: 'Clase eliminada', data: claseEliminada });
-    } else {
-      res.status(404).json({ message: 'Clase no encontrada' });
-    }
-  } catch (error) {
-    console.error(`Error en controller deleteClase con ID ${req.params.id}:`, error);
-    res.status(500).json({ message: 'Error interno del servidor al eliminar clase' });
   }
 };

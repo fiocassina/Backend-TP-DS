@@ -6,6 +6,7 @@ export interface IUsuario extends Document {
   email: string;
   password: string;
   activo: boolean;
+  rol: string;
   compararPassword: (password: string) => Promise<boolean>;
 }
 
@@ -14,6 +15,11 @@ const usuarioSchema = new Schema<IUsuario>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   activo: { type: Boolean, default: true }, // para baja logica
+  rol: { 
+    type: String, 
+    enum: ['alumno', 'profesor'], 
+    default: 'alumno' 
+  },
 }, {
   timestamps: true 
 });
