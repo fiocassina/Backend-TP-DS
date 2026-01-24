@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-// Definimos los estados posibles para mayor claridad y autocompletado
 export type EstadoEntrega = 'pendiente' | 'aprobada' | 'desaprobada';
 
 export interface Entrega extends Document {
@@ -38,8 +37,7 @@ const entregaSchema = new Schema<Entrega>({
   correccion: {
     type: Schema.Types.ObjectId,
     ref: "Correccion",
-    required: false,
-    unique: true
+    required: false
   },
   estado: {
     type: String,

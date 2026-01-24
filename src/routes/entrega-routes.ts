@@ -1,29 +1,32 @@
 import { Router } from 'express';
-import { auth, esProfeDeLaClase } from '../middleware/auth.js'; 
+import { auth } from '../middleware/auth.js'; 
+import multer from 'multer';
 import {
-  getMisClases,
-  getClaseById,
-  createClase,
-  updateClase,
-  deleteClase,
-  inscribirAlumno,
-} from '../controllers/clase-controllers.js';
+  getProyectosPendientesAlumno,
+  crearEntrega,
+  getEntregasPorProyecto,
+  getEntregasPorAlumno,
+  getEntregaPorId,
+  getReporteAprobadas,
+} from '../controllers/entrega-controllers.js';
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const router = Router();
-
-
-router.get('/', auth, getMisClases);
-router.get('/:id', auth, getClaseById);
-
-
-router.post('/', auth, createClase); 
-
-
-router.put('/:id', auth, esProfeDeLaClase, updateClase); 
-router.patch('/:id', auth, esProfeDeLaClase, updateClase); 
-router.delete('/:id', auth, esProfeDeLaClase, deleteClase);
-
-
-router.post('/inscribir', auth, inscribirAlumno); 
+router.get('/pendientes', auth, getProyectosPendientesAlumno);
+router.post('/', auth, upload.single('archivoUrl'), crearEntrega);
+router.get('/proyecto/:proyectoId', auth, getEntregasPorProyecto);
+router.get('/alumno/mis-entregas', auth, getEntregasPorAlumno);
+router.get('/reporte-aprobadas', auth, getReporteAprobadas);
+router.get('/:entregaId', auth, getEntregaPorId);
 
 export default router;

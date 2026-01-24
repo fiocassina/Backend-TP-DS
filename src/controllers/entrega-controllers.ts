@@ -50,6 +50,12 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
     const { proyectoId, comentario } = req.body;
     if (!proyectoId) return res.status(400).json({ message: "Falta proyectoId" });
 
+    // Verificar si ya existe una entrega para este alumno y proyecto
+    const entregaExistente = await Entrega.findOne({ alumno: alumnoId, proyecto: proyectoId });
+    if (entregaExistente) {
+      return res.status(400).json({ message: "Ya has entregado este proyecto" });
+    }
+
     const archivoUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
     const nuevaEntrega = new Entrega({
@@ -64,9 +70,15 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
 
     const entregaConPopulates = await Entrega.findById(nuevaEntrega._id)
       .populate('alumno', 'nombreCompleto email')
-      .populate('proyecto', 'nombre fechaEntrega tipoProyecto');
+      .populate('proyecto', '_id nombre fechaEntrega tipoProyecto');
 
-    res.status(201).json({ message: "Entrega creada con éxito", data: entregaConPopulates });
+    if (!entregaConPopulates) {
+      return res.status(500).json({ error: "Error al recuperar la entrega creada" });
+    }
+
+    const entregaConEstado = { ...entregaConPopulates.toObject(), estado: entregaConPopulates.estado || 'pendiente' };
+
+    res.status(201).json({ message: "Entrega creada con éxito", data: entregaConEstado });
   } catch (error) {
     console.error("Error al crear entrega:", error);
     res.status(500).json({ error: "Error al crear la entrega" });
@@ -84,12 +96,15 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
 
     const entregas = await Entrega.find({ proyecto: proyectoId })
       .populate('alumno', 'nombreCompleto email')
-      .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('proyecto', '_id nombre fechaEntrega tipoProyecto')
       .populate('correccion') 
       .lean();
-    if (req.query.wrap === 'true') return res.status(200).json({ data: entregas });
 
-    return res.status(200).json(entregas);
+    const entregasConEstado = entregas.map(e => ({ ...e, estado: e.estado || 'pendiente' }));
+
+    if (req.query.wrap === 'true') return res.status(200).json({ data: entregasConEstado });
+
+    return res.status(200).json(entregasConEstado);
   } catch (error) {
     console.error("Error al obtener entregas por proyecto:", error);
     res.status(500).json({ error: "Error al obtener las entregas" });
@@ -102,11 +117,13 @@ export const getEntregasPorAlumno = async (req: RequestWithFile, res: Response) 
     if (!alumnoId) return res.status(401).json({ message: "Usuario no autenticado" });
 
     const entregas = await Entrega.find({ alumno: alumnoId })
-      .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('proyecto', '_id nombre fechaEntrega tipoProyecto')
       .populate('correccion') 
       .lean();
 
-    res.status(200).json(entregas);
+    const entregasConEstado = entregas.map(e => ({ ...e, estado: e.estado || 'pendiente' }));
+
+    res.status(200).json(entregasConEstado);
   } catch (error) {
     console.error("Error al obtener entregas por alumno:", error);
     res.status(500).json({ error: "Error al obtener las entregas del alumno" });
@@ -123,12 +140,14 @@ export const getEntregaPorId = async (req: Request, res: Response) => {
 
     const entrega = await Entrega.findById(entregaId)
       .populate('alumno', 'nombreCompleto email')
-      .populate('proyecto', 'nombre fechaEntrega tipoProyecto')
+      .populate('proyecto', '_id nombre fechaEntrega tipoProyecto')
       .populate('correccion'); 
 
     if (!entrega) return res.status(404).json({ message: "Entrega no encontrada" });
 
-    res.status(200).json(entrega);
+    const entregaConEstado = { ...entrega.toObject(), estado: entrega.estado || 'pendiente' };
+
+    res.status(200).json(entregaConEstado);
   } catch (error) {
     console.error("Error al obtener entrega por ID:", error);
     res.status(500).json({ error: "Error al obtener la entrega" });
