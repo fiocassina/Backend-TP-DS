@@ -11,7 +11,6 @@ interface ProyectoInput {
   fechaEntrega: Date;
 }
 
-
 export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => {
   const clase = await Clase.findById(data.claseId);
   if (!clase) {
@@ -42,6 +41,7 @@ export const deleteProyecto = async (proyectoId: string): Promise<IProyecto | nu
   return await Proyecto.findByIdAndDelete(proyectoId);
 };
 
+// Esta es la buena, la dejamos y borramos la de abajo
 export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
   return await Proyecto.findById(proyectoId)
     .populate("clase")
@@ -56,7 +56,6 @@ export const getProyectosPorClase = async (claseId: string): Promise<IProyecto[]
   return proyectos;
 };
 
-
 export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
   const clasesDelAlumno = await Clase.find({ alumnos: new mongoose.Types.ObjectId(alumnoId) }).select("_id");
   const idsDeClases = clasesDelAlumno.map((clase) => clase._id);
@@ -67,6 +66,3 @@ export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto
 
   return proyectos;
 };
-
-
-

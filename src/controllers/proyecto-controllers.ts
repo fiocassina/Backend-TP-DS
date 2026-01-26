@@ -92,3 +92,16 @@ export const getProyectosAlumno = async (req: RequestConUser, res: Response) => 
     res.status(500).json({ message: "Error al obtener proyectos", error });
   }
 };
+
+export const getProyectoById = async (req: Request, res: Response) => {
+  try {
+    const proyecto = await service.getProyectoById(req.params.id);
+    if (!proyecto) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+    res.status(200).json(proyecto);
+  } catch (error) {
+    console.error("Error al obtener proyecto:", error);
+    res.status(500).json({ error: "Error al obtener proyecto" });
+  }
+};

@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import Correccion, { ICorreccion } from "../model/correccion-model.js";
-import Entrega from "../model/entrega-model.js"; // <-- IMPORTAR EL MODELO ENTREGA
+import Entrega from "../model/entrega-model.js";
 
 export const crearCorreccion = async (data: {
   entrega: string;
@@ -27,7 +27,6 @@ export const crearCorreccion = async (data: {
   await entregaAsociada.save();
 
   return nuevaCorreccion;
-  
 };
 
 export const getCorreccionesPorEntrega = async (entregaId: string): Promise<ICorreccion[]> => {
@@ -36,4 +35,33 @@ export const getCorreccionesPorEntrega = async (entregaId: string): Promise<ICor
 
 export const getTodasCorrecciones = async (): Promise<ICorreccion[]> => {
   return await Correccion.find().populate('entrega');
+};
+
+export const actualizarCorreccion = async (id: string, data: { nota: number; comentario: string }) => {
+  
+  const correccionActualizada = await Correccion.findByIdAndUpdate(
+      id,
+      {
+          nota: data.nota,
+          comentario: data.comentario,
+          fechaCorreccion: new Date()
+      },
+      { new: true } 
+  );
+
+  if (!correccionActualizada) {
+      throw new Error("Corrección no encontrada");
+  }
+
+  const entrega = await Entrega.findById(correccionActualizada.entrega);
+  
+  if (entrega) {
+      const nuevoEstado = data.nota >= 6 ? 'aprobada' : 'desaprobada';
+      if (entrega.estado !== nuevoEstado) {
+          entrega.estado = nuevoEstado;
+          await entrega.save();
+      }
+  }
+
+  return correccionActualizada;
 };

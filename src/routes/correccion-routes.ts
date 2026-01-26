@@ -9,4 +9,6 @@ router.get("/entrega/:entregaId", correccionController.getCorreccionesPorEntrega
 
 router.get("/", correccionController.getTodasCorrecciones);
 
+router.put("/:id", correccionController.actualizarCorreccion); 
+
 export default router;
