@@ -3,11 +3,9 @@ import * as service from '../services/clase-services.js';
 import Clase from '../model/clase-model.js';
 import mongoose from 'mongoose';
 
-
 interface RequestConUser extends Request {
   user?: { id: string };
 }
-
 
 export const getMisClases = async (req: RequestConUser, res: Response) => {
   try {
@@ -18,9 +16,7 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-
     const clasesComoProfe = await Clase.find({ profesorId: userId });
-
     const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');
 
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
@@ -30,10 +26,12 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
   }
 };
 
-
 export const getClaseById = async (req: Request, res: Response) => {
   try {
-    const clase = await Clase.findById(req.params.id).populate('profesorId', 'nombreCompleto');
+    const clase = await Clase.findById(req.params.id)
+      .populate('profesorId', 'nombreCompleto')
+      .populate('alumnos', 'nombreCompleto email'); 
+      
     if (clase) {
       res.status(200).json(clase);
     } else {
@@ -44,7 +42,6 @@ export const getClaseById = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error interno del servidor al obtener clase por ID' });
   }
 };
-
 
 export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
   if (!req.body.nombre || !req.body.materia) {
@@ -59,7 +56,6 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
   }
 
   try {
-
     const nuevaClase = await service.create({
       ...req.body,
       profesorId: new mongoose.Types.ObjectId(userId), 
@@ -72,7 +68,6 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
     res.status(500).json({ message: 'Error interno del servidor al crear clase' });
   }
 };
-
 
 export const updateClase = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -89,7 +84,6 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-
 export const deleteClase = async (req: Request, res: Response): Promise<void> => {
   try {
     const claseEliminada = await service.remove(req.params.id);
@@ -103,7 +97,6 @@ export const deleteClase = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: 'Error interno del servidor al eliminar clase' });
   }
 };
-
 
 export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
   try {
@@ -126,7 +119,6 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-
     if (clase.profesorId.toString() === userId) {
       return res.status(403).json({
         mensaje: "No puedes inscribirte a esta clase porque eres el profesor titular."
@@ -134,7 +126,6 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
     }
 
     const userIdAsObjectId = new mongoose.Types.ObjectId(userId);
-
 
     if (clase.alumnos.includes(userIdAsObjectId)) {
       res.status(400).json({ mensaje: "Ya estás inscrito en esta clase" });
@@ -150,7 +141,6 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
     res.status(500).json({ mensaje: "Error al inscribir alumno", error });
   }
 };
-
 
 export const getClaseByClave = async (req: Request, res: Response): Promise<void> => {
   const { clave } = req.query;
@@ -170,5 +160,27 @@ export const getClaseByClave = async (req: Request, res: Response): Promise<void
   } catch (error) {
     console.error("Error en controller getClaseByClave:", error);
     res.status(500).json({ message: 'Error interno del servidor al buscar clase' });
+  }
+};
+
+export const expulsarAlumno = async (req: RequestConUser, res: Response) => {
+  try {
+    const { id, alumnoId } = req.params;
+    const userId = req.user?.id; 
+
+    const clase = await Clase.findById(id);
+    if (!clase) return res.status(404).json({ message: 'Clase no encontrada' });
+
+    if (clase.profesorId.toString() !== userId) {
+      return res.status(403).json({ message: 'No tienes permiso para expulsar alumnos de esta clase' });
+    }
+
+    clase.alumnos = clase.alumnos.filter(a => a.toString() !== alumnoId);
+    await clase.save();
+
+    res.status(200).json({ message: 'Alumno eliminado de la clase correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al eliminar alumno', error });
   }
 };

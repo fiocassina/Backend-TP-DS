@@ -7,23 +7,22 @@ import {
   updateClase,
   deleteClase,
   inscribirAlumno,
+  expulsarAlumno
 } from '../controllers/clase-controllers.js';
 
 const router = Router();
-
 
 router.get('/', auth, getMisClases);
 
 router.get('/:id', auth, esMiembroDeLaClase, getClaseById); 
 
-
 router.post('/', auth, createClase); 
-
 
 router.put('/:id', auth, esProfeDeLaClase, updateClase); 
 router.patch('/:id', auth, esProfeDeLaClase, updateClase); 
 router.delete('/:id', auth, esProfeDeLaClase, deleteClase);
 
+router.delete('/:id/alumnos/:alumnoId', auth, esProfeDeLaClase, expulsarAlumno);
 
 router.post('/inscribir', auth, inscribirAlumno); 
 
