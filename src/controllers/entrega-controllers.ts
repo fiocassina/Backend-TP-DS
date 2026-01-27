@@ -25,14 +25,21 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
-    // Búsqueda en la BD con todos los filtros 
     const proyectosPendientes = await Proyecto.find({
       clase: { $in: claseIds },
       _id: { $nin: proyectosEntregadosIds },
       fechaEntrega: { $gte: hoy } 
     })
-    .populate('clase', 'nombre _id')
+    .populate({
+        path: 'clase',
+        select: 'nombre profesorId', 
+        populate: {
+            path: 'profesorId',    
+            select: 'nombreCompleto'        
+    }
+    })
     .populate('tipoProyecto', 'nombre')
+    .sort({ fechaEntrega: 1 }) // Ordenamiento por fecha de entrega
     .lean();
 
     res.status(200).json(proyectosPendientes);
