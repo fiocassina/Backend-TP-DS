@@ -42,13 +42,13 @@ export const deleteProyecto = async (proyectoId: string): Promise<IProyecto | nu
 };
 
 // Esta es la buena, la dejamos y borramos la de abajo
-export const getProyectoById = async (proyectoId: string): Promise<IProyecto | null> => {
+export const getProyectoById = async (proyectoId: string): Promise<any> => {
   return await Proyecto.findById(proyectoId)
     .populate("clase")
     .populate("tipoProyecto");
 };
 
-export const getProyectosPorClase = async (claseId: string): Promise<IProyecto[]> => {
+export const getProyectosPorClase = async (claseId: string): Promise<any> => {
   const proyectos = await Proyecto.find({ clase: claseId })
     .populate("tipoProyecto")
     .populate("clase");
@@ -56,7 +56,7 @@ export const getProyectosPorClase = async (claseId: string): Promise<IProyecto[]
   return proyectos;
 };
 
-export const getProyectosPorAlumno = async (alumnoId: string): Promise<IProyecto[]> => {
+export const getProyectosPorAlumno = async (alumnoId: string): Promise<any> => {
   const clasesDelAlumno = await Clase.find({ alumnos: new mongoose.Types.ObjectId(alumnoId) }).select("_id");
   const idsDeClases = clasesDelAlumno.map((clase) => clase._id);
 

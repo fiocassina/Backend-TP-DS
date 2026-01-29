@@ -4,7 +4,7 @@ import { IClase } from "./clase-model.js";
 export interface IProyecto extends Document {
   nombre: string;
   descripcion?: string;
-  clase: Types.ObjectId | IClase;
+  clase: Types.ObjectId;
   tipoProyecto: Types.ObjectId;
   fechaCreacion: Date;
   fechaEntrega: Date;

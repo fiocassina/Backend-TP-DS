@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import Entrega from "../model/entrega-model.js";
 import Proyecto from "../model/proyecto-model.js";
 import Clase from "../model/clase-model.js";
@@ -16,11 +16,11 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
 
     //IDs de las entregas que el alumno ya hizo.
     const entregasAlumno = await Entrega.find({ alumno: alumnoId }).select('proyecto').lean();
-    const proyectosEntregadosIds = entregasAlumno.map(e => e.proyecto);
+    const proyectosEntregadosIds = entregasAlumno.map((e: any) => e.proyecto);
 
     // IDs de las clases del alumno.
     const clases = await Clase.find({ alumnos: alumnoId }).select('_id').lean();
-    const claseIds = clases.map(c => c._id);
+    const claseIds = clases.map((c: any) => c._id);
     
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -107,7 +107,7 @@ export const getEntregasPorProyecto = async (req: Request, res: Response) => {
       .populate('correccion') 
       .lean();
 
-    const entregasConEstado = entregas.map(e => ({ ...e, estado: e.estado || 'pendiente' }));
+    const entregasConEstado = entregas.map((e: any) => ({ ...e, estado: e.estado || 'pendiente' }));
 
     if (req.query.wrap === 'true') return res.status(200).json({ data: entregasConEstado });
 
@@ -128,7 +128,7 @@ export const getEntregasPorAlumno = async (req: RequestWithFile, res: Response) 
       .populate('correccion') 
       .lean();
 
-    const entregasConEstado = entregas.map(e => ({ ...e, estado: e.estado || 'pendiente' }));
+    const entregasConEstado = entregas.map((e: any) => ({ ...e, estado: e.estado || 'pendiente' }));
 
     res.status(200).json(entregasConEstado);
   } catch (error) {
