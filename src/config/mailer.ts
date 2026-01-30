@@ -1,20 +1,17 @@
-
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import path from 'path';
 
-
-dotenv.config();
-
+dotenv.config({ path: path.resolve(process.cwd(), 'variables.env') });
 
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 
 if (!emailUser || !emailPass) {
-  console.error('Faltan las variables EMAIL_USER o EMAIL_PASS en el archivo .env');
+  console.error('Faltan las variables EMAIL_USER o EMAIL_PASS en el archivo variables.env');
   process.exit(1); 
 }
 
-// Creamos el objeto "transporter" con tipos de TypeScript
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {

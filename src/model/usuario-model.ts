@@ -1,12 +1,15 @@
 import { Schema, model, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
+// Interfaz para TypeScript
 export interface IUsuario extends Document {
   nombreCompleto: string;
   email: string;
   password: string;
   activo: boolean;
   rol: string;
+  resetPasswordToken: string | null; 
+  resetPasswordExpires: Date | null;
   compararPassword: (password: string) => Promise<boolean>;
 }
 
@@ -15,6 +18,10 @@ const usuarioSchema = new Schema<IUsuario>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   activo: { type: Boolean, default: true }, // para baja logica
+  
+  resetPasswordToken: { type: String, default: null }, 
+  resetPasswordExpires: { type: Date, default: null },
+  
   rol: { 
     type: String, 
     enum: ['alumno', 'profesor'], 
@@ -23,6 +30,7 @@ const usuarioSchema = new Schema<IUsuario>({
 }, {
   timestamps: true 
 });
+
 
 usuarioSchema.pre<IUsuario>('save', async function (next) {
   if (!this.isModified('password')) return next();
