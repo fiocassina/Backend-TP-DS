@@ -4,6 +4,8 @@ import multer from 'multer';
 import {
   getProyectosPendientesAlumno,
   crearEntrega,
+  editarEntrega,
+  eliminarEntrega,
   getEntregasPorProyecto,
   getEntregasPorAlumno,
   getEntregaPorId,
@@ -28,5 +30,7 @@ router.get('/proyecto/:proyectoId', auth, getEntregasPorProyecto);
 router.get('/alumno/mis-entregas', auth, getEntregasPorAlumno);
 router.get('/reporte-aprobadas', auth, getReporteAprobadas);
 router.get('/:entregaId', auth, getEntregaPorId);
+router.delete('/:id', auth, eliminarEntrega);
+router.put('/:id', auth, upload.single('archivoUrl'), editarEntrega);
 
 export default router;

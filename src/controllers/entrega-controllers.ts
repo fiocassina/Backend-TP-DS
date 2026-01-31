@@ -1,8 +1,11 @@
+import fs from 'fs';       
+import path from 'path';   
 import { Request, Response } from "express";
 import mongoose, { Document } from "mongoose";
 import Entrega from "../model/entrega-model.js";
 import Proyecto from "../model/proyecto-model.js";
 import Clase from "../model/clase-model.js";
+
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
@@ -89,6 +92,77 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   } catch (error) {
     console.error("Error al crear entrega:", error);
     res.status(500).json({ error: "Error al crear la entrega" });
+  }
+};
+
+export const editarEntrega = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { comentario } = req.body;
+
+    const entrega = await Entrega.findById(id);
+    if (!entrega) {
+      return res.status(404).json({ message: "Entrega no encontrada" });
+    }
+
+    if (comentario !== undefined) entrega.comentario = comentario;
+
+    
+    if (req.file) {
+      /* if (entrega.archivoUrl) { //eliminamos archivo viejo físicamente
+        const rutaArchivoViejo = path.resolve(entrega.archivoUrl);
+        if (fs.existsSync(rutaArchivoViejo)) {
+          try {
+            fs.unlinkSync(rutaArchivoViejo); 
+            console.log('Archivo viejo eliminado:', rutaArchivoViejo);
+          } catch (err) {
+            console.error('Error al borrar archivo viejo:', err);
+          }
+        }
+      }*/
+
+      entrega.archivoUrl = req.file.path; 
+    }
+
+    const entregaActualizada = await entrega.save();
+
+    res.status(200).json({ 
+      message: "Entrega actualizada", 
+      data: entregaActualizada 
+    });
+
+  } catch (error) {
+    console.error("Error al editar entrega:", error);
+    res.status(500).json({ error: "Error interno al editar la entrega" });
+  }
+};
+
+export const eliminarEntrega = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const entrega = await Entrega.findById(id);
+    if (!entrega) {
+      return res.status(404).json({ message: "Entrega no encontrada" });
+    }
+
+    //eliminamos el archivo fisicamente
+    /*if (entrega.archivoUrl) {
+      const rutaArchivo = path.resolve(entrega.archivoUrl);
+      if (fs.existsSync(rutaArchivo)) {
+        try {
+          fs.unlinkSync(rutaArchivo);
+        } catch (err) {
+          console.error('Error al borrar archivo físico:', err);
+        }
+      }
+    }*/
+
+    await Entrega.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Entrega eliminada con éxito" });
+  } catch (error) {
+    console.error("Error al eliminar entrega:", error);
+    res.status(500).json({ error: "Error al eliminar la entrega" });
   }
 };
 
