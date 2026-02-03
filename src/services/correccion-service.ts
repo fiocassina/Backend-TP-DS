@@ -65,3 +65,22 @@ export const actualizarCorreccion = async (id: string, data: { nota: number; com
 
   return correccionActualizada;
 };
+
+export const eliminarCorreccion = async (id: string): Promise<void> => {
+  const correccion = await Correccion.findById(id);
+  
+  if (!correccion) {
+    throw new Error("Corrección no encontrada");
+  }
+
+  // Restaurar la entrega al estado pendiente
+  const entrega = await Entrega.findById(correccion.entrega);
+  if (entrega) {
+    entrega.correccion = undefined;
+    entrega.estado = 'pendiente';
+    await entrega.save();
+  }
+
+  // Eliminar la corrección
+  await Correccion.findByIdAndDelete(id);
+};

@@ -109,8 +109,10 @@ export const editarEntrega = async (req: Request, res: Response) => {
 
     
     if (req.file) {
-      /* if (entrega.archivoUrl) { //eliminamos archivo viejo físicamente
-        const rutaArchivoViejo = path.resolve(entrega.archivoUrl);
+      //eliminamos el archivo viejo físicamente
+      if (entrega.archivoUrl) {
+        const nombreArchivoViejo = path.basename(entrega.archivoUrl);
+        const rutaArchivoViejo = path.join('uploads', nombreArchivoViejo);
         if (fs.existsSync(rutaArchivoViejo)) {
           try {
             fs.unlinkSync(rutaArchivoViejo); 
@@ -119,9 +121,9 @@ export const editarEntrega = async (req: Request, res: Response) => {
             console.error('Error al borrar archivo viejo:', err);
           }
         }
-      }*/
+      }
 
-      entrega.archivoUrl = req.file.path; 
+      entrega.archivoUrl = `/uploads/${req.file.filename}`; 
     }
 
     const entregaActualizada = await entrega.save();
@@ -145,17 +147,19 @@ export const eliminarEntrega = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Entrega no encontrada" });
     }
 
-    //eliminamos el archivo fisicamente
-    /*if (entrega.archivoUrl) {
-      const rutaArchivo = path.resolve(entrega.archivoUrl);
+    // eliminamos el archivo fisicamente
+    if (entrega.archivoUrl) {
+      const nombreArchivo = path.basename(entrega.archivoUrl);
+      const rutaArchivo = path.join('uploads', nombreArchivo);
       if (fs.existsSync(rutaArchivo)) {
         try {
           fs.unlinkSync(rutaArchivo);
+          console.log('Archivo eliminado:', rutaArchivo);
         } catch (err) {
           console.error('Error al borrar archivo físico:', err);
         }
       }
-    }*/
+    }
 
     await Entrega.findByIdAndDelete(id);
 

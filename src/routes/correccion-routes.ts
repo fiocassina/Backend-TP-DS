@@ -11,4 +11,6 @@ router.get("/", correccionController.getTodasCorrecciones);
 
 router.put("/:id", correccionController.actualizarCorreccion); 
 
+router.delete("/:id", correccionController.eliminarCorreccion);
+
 export default router;
