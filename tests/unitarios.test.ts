@@ -5,19 +5,21 @@ describe('Pruebas Unitarias de Reglas de Negocio', () => {
 
     // --- INTEGRANTE 1: Validación de Fechas para Proyectos ---
     // Regla: Un profesor no puede crear una entrega con fecha pasada.
-    describe('Validación de Fechas de Entrega', () => {
-        
-        test('Debe ACEPTAR una fecha futura (ej: mañana)', () => {
+describe('Función: esFechaFutura', () => {
+        test('Debe devolver TRUE para una fecha futura (mañana)', () => {
             const manana = new Date();
-            manana.setDate(manana.getDate() + 1); // Sumamos 1 día a hoy
-            // Esperamos que la función diga "TRUE" (Es válida)
+            manana.setDate(manana.getDate() + 1); // Sumamos 1 día
             expect(esFechaFutura(manana)).toBe(true);
         });
 
-        test('Debe RECHAZAR una fecha pasada (ej: ayer)', () => {
+        test('Debe devolver TRUE para la fecha de HOY', () => {
+            const hoy = new Date(); // Fecha actual
+            expect(esFechaFutura(hoy)).toBe(true);
+        });
+
+        test('Debe devolver FALSE para una fecha pasada (ayer)', () => {
             const ayer = new Date();
-            ayer.setDate(ayer.getDate() - 1); // Restamos 1 día a hoy
-            // Esperamos que la función diga "FALSE" (No es válida)
+            ayer.setDate(ayer.getDate() - 1); // Restamos 1 día
             expect(esFechaFutura(ayer)).toBe(false);
         });
     });

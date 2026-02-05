@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "../services/proyecto-service.js";
 import proyectoModel from "../model/proyecto-model.js";
+import { esFechaFutura } from '../utils/validaciones.js';
 
 interface RequestConUser extends Request {
   user?: { id: string; rol?: string };
@@ -13,6 +14,13 @@ export const crearProyecto = async (req: Request, res: Response) => {
 
     if (!tipoProyecto || !tipoProyecto._id) {
       return res.status(400).json({ error: "Debe enviarse el ID del tipo de proyecto" });
+    }
+
+    const fechaObj = new Date(fechaEntrega);
+
+
+    if (!esFechaFutura(fechaObj)) {
+        return res.status(400).json({ error: "La fecha de entrega no puede ser en el pasado." });
     }
 
     const nuevoProyecto = await service.crearProyecto({

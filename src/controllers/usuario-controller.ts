@@ -3,6 +3,7 @@ import Usuario from '../model/usuario-model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'; 
 import transporter from "../config/mailer.js";
+import { esEmailValido } from '../utils/validaciones.js';
 
 interface RequestConUser extends Request {
   user?: { id: string };
@@ -50,6 +51,10 @@ export const login: RequestHandler = async (req, res, next) => {
 export const registrar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, ...restoDeDatos } = req.body;
+
+    if (!esEmailValido(email)) {
+       return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
+    }
     const usuarioExistente = await Usuario.findOne({ email });
 
     if (usuarioExistente) {

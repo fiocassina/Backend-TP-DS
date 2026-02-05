@@ -1,9 +1,11 @@
 export const esFechaFutura = (fecha: Date): boolean => {
     const hoy = new Date();
-    // Comparamos los milisegundos de la fecha
-    return fecha.getTime() > hoy.getTime();
-};
+    // "Reseteamos" la hora de hoy a las 00:00:00
+    // Así, si la fecha es "hoy a la tarde", va a ser mayor a "hoy a las 00:00" y pasará.
+    hoy.setHours(0, 0, 0, 0);
 
+    return fecha.getTime() >= hoy.getTime();
+};
 export const esEmailValido = (email: string): boolean => {
     // Regex simple para validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

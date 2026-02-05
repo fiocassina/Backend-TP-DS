@@ -1,11 +1,16 @@
 import { Request, Response } from "express";
 import * as correccionService from "../services/correccion-service.js";
+import { esNotaValida } from '../utils/validaciones.js';
 
 export const crearCorreccion = async (req: Request, res: Response) => {
   try {
     const { entrega, nota, comentario } = req.body;
     if (!entrega || nota == null) {
       return res.status(400).json({ message: "Faltan datos obligatorios (entrega y nota)" });
+    }
+
+    if (!esNotaValida(nota)) {
+        return res.status(400).json({ message: "La nota debe estar entre 1 y 10." });
     }
 
     const nuevaCorreccion = await correccionService.crearCorreccion({ entrega, nota, comentario });
