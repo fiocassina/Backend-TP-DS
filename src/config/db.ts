@@ -25,7 +25,9 @@ const seedTiposMaterial = async (): Promise<void> => {
 
 } catch (error) {
     console.error('Error al crear los tipos de material por defecto:', error);
-    process.exit(1); // Si hay un error aquí, es crítico y detenemos la app
+    if (process.env.NODE_ENV !== 'test') { //si estamos en test no salimos
+        process.exit(1); 
+    }
 }
 };
 
