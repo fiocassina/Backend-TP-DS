@@ -51,7 +51,7 @@ export const esProfeDeLaClase = async (req: RequestConUser, res: Response, next:
 // 3. NUEVO: Verificar si es Miembro (Para Ver/Entrar)
 // Deja pasar si sos el Profe O si sos un Alumno inscripto.
 export const esMiembroDeLaClase = async (req: RequestConUser, res: Response, next: NextFunction) => {
-    const claseId = req.params.id;
+    const claseId = req.params.id || req.params.claseId;
     const usuarioId = req.user?.id;
 
     try {

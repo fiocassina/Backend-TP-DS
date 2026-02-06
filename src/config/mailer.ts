@@ -25,7 +25,9 @@ transporter.verify((error, success) => {
   if (error) {
     console.error('Error al conectar con el servicio de correos:', error);
   } else {
-    console.log('El servicio de correos está listo y conectado para enviar mensajes.');
+    if (process.env.NODE_ENV !== 'test') {
+        console.log('El servicio de correos está listo y conectado para enviar mensajes.');
+    }
   }
 });
 

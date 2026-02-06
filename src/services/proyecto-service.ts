@@ -41,7 +41,6 @@ export const deleteProyecto = async (proyectoId: string): Promise<IProyecto | nu
   return await Proyecto.findByIdAndDelete(proyectoId);
 };
 
-// Esta es la buena, la dejamos y borramos la de abajo
 export const getProyectoById = async (proyectoId: string): Promise<any> => {
   return await Proyecto.findById(proyectoId)
     .populate("clase")
