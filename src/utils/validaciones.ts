@@ -16,3 +16,9 @@ export const esNotaValida = (nota: number): boolean => {
     // La nota debe ser mayor o igual a 1 y menor o igual a 10
     return nota >= 1 && nota <= 10;
 };
+
+export const esTextoValido = (texto: string, min: number, max?: number): boolean => {
+    if (!texto) return false;
+    const len = texto.trim().length;
+    return len >= min && (max === undefined || len <= max);
+};

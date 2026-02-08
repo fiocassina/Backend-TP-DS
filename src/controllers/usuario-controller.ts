@@ -3,7 +3,7 @@ import Usuario from '../model/usuario-model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'; 
 import transporter from "../config/mailer.js";
-import { esEmailValido } from '../utils/validaciones.js';
+import { esEmailValido, esTextoValido } from '../utils/validaciones.js';
 
 interface RequestConUser extends Request {
   user?: { id: string };
@@ -50,13 +50,16 @@ export const login: RequestHandler = async (req, res, next) => {
 
 export const registrar = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, ...restoDeDatos } = req.body;
+    const { email, nombreCompleto, ...restoDeDatos } = req.body;
 
     if (!esEmailValido(email)) {
        return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
     }
-    const usuarioExistente = await Usuario.findOne({ email });
+    if (!esTextoValido(nombreCompleto, 3, 50)) {
+       return res.status(400).json({ mensaje: 'El nombre debe tener entre 3 y 50 caracteres.' });
+    }
 
+    const usuarioExistente = await Usuario.findOne({ email });
     if (usuarioExistente) {
       return res.status(409).json({
         mensaje: 'El email ya ha sido registrado. Por favor, usa otro correo.'
@@ -95,6 +98,12 @@ export const getPerfil = async (req: RequestConUser, res: Response) => {
 export const updatePerfil = async (req: RequestConUser, res: Response) => {
   try {
     const { nombreCompleto, email } = req.body;
+    if (email && !esEmailValido(email)) {
+       return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
+    }
+    if (nombreCompleto && !esTextoValido(nombreCompleto, 3, 100)) {
+       return res.status(400).json({ mensaje: 'El nombre completo debe tener entre 3 y 100 caracteres.' });
+    }
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
       req.user?.id,
       { nombreCompleto, email },
@@ -105,7 +114,12 @@ export const updatePerfil = async (req: RequestConUser, res: Response) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
     res.status(200).json({ mensaje: 'Perfil actualizado', usuario: usuarioActualizado });
-  } catch (error) {
+  } catch (error) { 
+
+    if ((error as any).code === 11000) { //valida si ya hay otro usuario con el mismo mail
+        return res.status(409).json({ mensaje: 'Ese email ya está en uso por otro usuario.' });
+    }
+
     res.status(500).json({ mensaje: 'Error al actualizar el perfil', error });
   }
 };
