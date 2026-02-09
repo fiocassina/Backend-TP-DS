@@ -75,6 +75,11 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
 
 export const updateClase = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (req.body.nombre && !esTextoValido(req.body.nombre, 3)) {
+        res.status(400).json({ message: 'El nombre de la clase debe tener al menos 3 caracteres.' });
+        return;
+    }
+    // 👆
     const claseActualizada = await service.update(req.params.id, req.body);
     if (claseActualizada) {
       const clasePopulada = await Clase.findById(claseActualizada._id).populate('profesorId', 'nombreCompleto');

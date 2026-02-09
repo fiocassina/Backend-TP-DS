@@ -104,7 +104,9 @@ export const editarEntrega = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { comentario } = req.body;
-
+    if (comentario && !esTextoValido(comentario, 0, 500)) {
+        return res.status(400).json({ message: "El comentario no puede superar los 500 caracteres." });
+    }
     const entrega = await Entrega.findById(id);
     if (!entrega) {
       return res.status(404).json({ message: "Entrega no encontrada" });

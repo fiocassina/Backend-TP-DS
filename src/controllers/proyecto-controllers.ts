@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "../services/proyecto-service.js";
 import proyectoModel from "../model/proyecto-model.js";
-import { esFechaFutura } from '../utils/validaciones.js';
+import { esFechaFutura, esTextoValido } from '../utils/validaciones.js';
 
 interface RequestConUser extends Request {
   user?: { id: string; rol?: string };
@@ -15,7 +15,12 @@ export const crearProyecto = async (req: Request, res: Response) => {
     if (!tipoProyecto || !tipoProyecto._id) {
       return res.status(400).json({ error: "Debe enviarse el ID del tipo de proyecto" });
     }
-
+    if (!esTextoValido(nombre, 3, 50)) {
+        return res.status(400).json({ error: "El nombre debe tener entre 3 y 50 caracteres." });
+    }
+    if (!esTextoValido(descripcion, 5, 200)) {
+        return res.status(400).json({ error: "La descripción debe tener entre 5 y 200 caracteres." });
+    }
     const fechaObj = new Date(fechaEntrega);
 
 
@@ -43,11 +48,31 @@ export const crearProyecto = async (req: Request, res: Response) => {
 
 export const updateProyecto = async (req: Request, res: Response) => {
   try {
+    const { nombre, descripcion, fechaEntrega } = req.body;
+
+    if (nombre !== undefined && !esTextoValido(nombre, 3, 50)) {
+        return res.status(400).json({ error: "El nombre debe tener entre 3 y 50 caracteres." });
+    }
+    
+    if (descripcion !== undefined && !esTextoValido(descripcion, 5, 200)) {
+        return res.status(400).json({ error: "La descripción debe tener entre 5 y 200 caracteres." });
+    }
+
+    if (fechaEntrega) {
+        const fechaObj = new Date(fechaEntrega);
+        if (isNaN(fechaObj.getTime()) || !esFechaFutura(fechaObj)) {
+            return res.status(400).json({ error: "La nueva fecha de entrega debe ser válida y futura." });
+        }
+    }
+
     const proyectoActualizado = await service.updateProyecto(req.params.id, req.body);
+    
     if (!proyectoActualizado) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
+    
     res.status(200).json(proyectoActualizado);
+
   } catch (error) {
     console.error("Error al actualizar el proyecto:", error);
     res.status(500).json({ error: "Error al actualizar el proyecto" });

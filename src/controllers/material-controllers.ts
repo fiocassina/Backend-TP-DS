@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as service from '../services/material-services.js';
 import { MaterialModel } from '../model/material-model.js';
+import { esTextoValido } from '../utils/validaciones.js';
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
@@ -44,7 +45,10 @@ export const getMaterialesPorClase = async (req: Request, res: Response): Promis
 export const createMaterial = async (req: RequestWithFile, res: Response): Promise<void> => {
   const { nombre, tipoId, claseId, url } = req.body;
   const file = req.file;
-
+  if (!esTextoValido(nombre, 3, 50)) {
+        res.status(400).json({ message: 'El nombre del material debe tener entre 3 y 50 caracteres.' });
+        return;
+    }
   if (!nombre || !tipoId || !claseId) {
     res.status(400).json({ message: 'Nombre, tipo y clase son requeridos' });
     return;
@@ -77,6 +81,10 @@ export const createMaterial = async (req: RequestWithFile, res: Response): Promi
 
 export const updateMaterial = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (req.body.nombre && !esTextoValido(req.body.nombre, 3, 50)) {
+        res.status(400).json({ message: 'El nombre del material debe tener entre 3 y 50 caracteres.' });
+        return;
+    }
     const materialActualizado = await service.update(req.params.id, req.body);
     if (materialActualizado) {
       res.status(200).json({ message: 'Material actualizado', data: materialActualizado });
