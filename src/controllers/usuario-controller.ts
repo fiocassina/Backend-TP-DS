@@ -3,7 +3,7 @@ import Usuario from '../model/usuario-model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'; 
 import transporter from "../config/mailer.js";
-import { esEmailValido, esTextoValido } from '../utils/validaciones.js';
+import { esEmailValido, esTextoValido, esPasswordValida } from '../utils/validaciones.js';
 
 interface RequestConUser extends Request {
   user?: { id: string };
@@ -53,12 +53,14 @@ export const registrar = async (req: Request, res: Response, next: NextFunction)
     const { email, nombreCompleto, ...restoDeDatos } = req.body;
 
     if (!esEmailValido(email)) {
-       return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
+      return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
     }
     if (!esTextoValido(nombreCompleto, 3, 50)) {
-       return res.status(400).json({ mensaje: 'El nombre debe tener entre 3 y 50 caracteres.' });
+      return res.status(400).json({ mensaje: 'El nombre debe tener entre 3 y 50 caracteres.' });
     }
-
+    if (!esPasswordValida(restoDeDatos.password)) { 
+      return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
     const usuarioExistente = await Usuario.findOne({ email });
     if (usuarioExistente) {
       return res.status(409).json({
@@ -99,10 +101,10 @@ export const updatePerfil = async (req: RequestConUser, res: Response) => {
   try {
     const { nombreCompleto, email } = req.body;
     if (email && !esEmailValido(email)) {
-       return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
+      return res.status(400).json({ mensaje: 'El formato del email no es válido.' });
     }
     if (nombreCompleto && !esTextoValido(nombreCompleto, 3, 100)) {
-       return res.status(400).json({ mensaje: 'El nombre completo debe tener entre 3 y 100 caracteres.' });
+      return res.status(400).json({ mensaje: 'El nombre completo debe tener entre 3 y 100 caracteres.' });
     }
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
       req.user?.id,
@@ -183,7 +185,9 @@ export const nuevaContrasena = async (req: Request, res: Response) => {
     if (!usuario) {
       return res.status(400).json({ message: "Código inválido o expirado" });
     }
-
+    if (!esPasswordValida(nuevaPassword)) {
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+    } //Ver si esta validacion esta bien ubicada
     // El middleware .pre('save') en el model detecta el cambio y encripta la contraseña.
     usuario.password = nuevaPassword;
 

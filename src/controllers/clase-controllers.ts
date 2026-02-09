@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as service from '../services/clase-services.js';
 import Clase from '../model/clase-model.js';
 import mongoose from 'mongoose';
-
+import { esTextoValido } from '../utils/validaciones.js';
 interface RequestConUser extends Request {
   user?: { id: string };
 }
@@ -44,6 +44,10 @@ export const getClaseById = async (req: Request, res: Response) => {
 };
 
 export const createClase = async (req: RequestConUser, res: Response): Promise<void> => {
+  if (!esTextoValido(req.body.nombre, 3)) {
+    res.status(400).json({ message: 'El nombre de la clase debe tener al menos 3 caracteres.' });
+    return;
+  }
   if (!req.body.nombre || !req.body.materia) {
     res.status(400).json({ message: 'Nombre y materia son requeridos' });
     return;

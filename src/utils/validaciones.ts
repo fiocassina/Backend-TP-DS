@@ -22,3 +22,7 @@ export const esTextoValido = (texto: string, min: number, max?: number): boolean
     const len = texto.trim().length;
     return len >= min && (max === undefined || len <= max);
 };
+
+export const esPasswordValida = (password: string): boolean => {
+    return typeof password === 'string' && password.length >= 6;
+};

@@ -5,7 +5,7 @@ import mongoose, { Document } from "mongoose";
 import Entrega from "../model/entrega-model.js";
 import Proyecto from "../model/proyecto-model.js";
 import Clase from "../model/clase-model.js";
-
+import { esTextoValido } from '../utils/validaciones.js';
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
@@ -59,7 +59,12 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
 
     const { proyectoId, comentario } = req.body;
     if (!proyectoId) return res.status(400).json({ message: "Falta proyectoId" });
-
+    if (!mongoose.Types.ObjectId.isValid(proyectoId)) {
+        return res.status(400).json({ message: "ID de proyecto inválido." });
+    }
+    if (comentario && !esTextoValido(comentario, 0, 500)) {
+        return res.status(400).json({ message: "El comentario no puede superar los 500 caracteres." });
+    }
     // Verificar si ya existe una entrega para este alumno y proyecto
     const entregaExistente = await Entrega.findOne({ alumno: alumnoId, proyecto: proyectoId });
     if (entregaExistente) {

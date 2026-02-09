@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as service from '../services/tipoProyecto-services.js';
-
+import { esTextoValido } from '../utils/validaciones.js';
 
 export const getAllTiposProyecto = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -31,6 +31,14 @@ export const createTipoProyecto = async (req: Request, res: Response): Promise<v
     res.status(400).json({ message: 'Nombre y descripción son requeridos' });
     return;
   }
+  if (!esTextoValido(req.body.nombre, 3, 50)) {
+    res.status(400).json({ message: 'El nombre debe tener entre 3 y 50 caracteres.' });
+    return;
+  }
+  if (!esTextoValido(req.body.descripcion, 5, 200)) {
+    res.status(400).json({ message: 'La descripción debe tener entre 5 y 200 caracteres.' });
+    return;
+  }
   try {
     const nuevoTipo = await service.create(req.body); 
     res.status(201).json({ message: 'Tipo de proyecto creado', data: nuevoTipo });
@@ -48,6 +56,14 @@ export const createTipoProyecto = async (req: Request, res: Response): Promise<v
 };
 
 export const updateTipoProyecto = async (req: Request, res: Response): Promise<void> => {
+    if (!esTextoValido(req.body.nombre, 3, 50)) {
+    res.status(400).json({ message: 'El nombre debe tener entre 3 y 50 caracteres.' });
+    return;
+  }
+  if (!esTextoValido(req.body.descripcion, 5, 200)) {
+    res.status(400).json({ message: 'La descripción debe tener entre 5 y 200 caracteres.' });
+    return;
+  }
   try {
     const tipoActualizado = await service.update(req.params.id, req.body); 
     if (tipoActualizado) {

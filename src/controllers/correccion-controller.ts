@@ -50,7 +50,9 @@ export const actualizarCorreccion = async (req: Request, res: Response) => {
     if (nota == null) {
       return res.status(400).json({ message: "Falta la nota para editar" });
     }
-
+    if (!esNotaValida(nota)) {
+        return res.status(400).json({ message: "La nota debe estar entre 1 y 10." });
+    }
     const correccion = await correccionService.actualizarCorreccion(id, { nota, comentario });
     
     res.status(200).json({ message: "Corrección actualizada correctamente", data: correccion });
