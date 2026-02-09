@@ -25,10 +25,12 @@ export const getById = async (id: string): Promise<ITipoProyecto | null> => {
       const nuevoTipo = new tipoProyectoModel(data); 
       await nuevoTipo.save();
       return nuevoTipo;
-    } catch (error) {
-      console.error("Error en service create:", error);
+    }catch (error) {
+      if ((error as any).code !== 11000) {
+        console.error("Error en service create:", error);
+      }
       throw error;
-    }   
+    }
   };
 
   export const update = async (id: string, data: Partial<ITipoProyecto>): Promise<ITipoProyecto | null> => {

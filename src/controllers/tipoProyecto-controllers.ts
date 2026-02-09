@@ -34,10 +34,13 @@ export const createTipoProyecto = async (req: Request, res: Response): Promise<v
   try {
     const nuevoTipo = await service.create(req.body); 
     res.status(201).json({ message: 'Tipo de proyecto creado', data: nuevoTipo });
-  } catch (error) {
-    console.error("Error en controller createTipoProyecto:", error);
+  }catch (error) {
+    if (error instanceof Error && (error as any).code !== 11000) {
+        console.error("Error en controller createTipoProyecto:", error);
+    }
+
     if (error instanceof Error && (error as any).code === 11000) {
-      res.status(409).json({ message: 'Ya existe un tipo de proyecto con ese nombre. El nombre debe ser único.' });
+      res.status(409).json({ message: 'Ya existe un tipo de proyecto con ese nombre...' });
     } else {
       res.status(500).json({ message: 'Error interno del servidor al crear tipo de proyecto' });
     }
