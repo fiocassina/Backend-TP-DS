@@ -7,6 +7,7 @@ import Proyecto from "../model/proyecto-model.js";
 import Clase from "../model/clase-model.js";
 import { esTextoValido } from '../utils/validaciones.js';
 
+
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
   user?: { id: string };
@@ -146,14 +147,17 @@ export const editarEntrega = async (req: Request, res: Response) => {
   }
 };
 
-export const eliminarEntrega = async (req: Request, res: Response) => {
+export const eliminarEntrega = async (req: RequestWithFile, res: Response) => {
   try {
     const { id } = req.params;
+    const usuarioId = req.user?.id;
     const entrega = await Entrega.findById(id);
     if (!entrega) {
       return res.status(404).json({ message: "Entrega no encontrada" });
     }
-
+    if (entrega.alumno.toString() !== usuarioId) {
+        return res.status(403).json({ message: "No tienes permiso para eliminar esta entrega." });
+    }
     // eliminamos el archivo fisicamente
     if (entrega.archivoUrl) {
       const nombreArchivo = path.basename(entrega.archivoUrl);
