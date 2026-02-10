@@ -12,7 +12,10 @@ interface RequestConUser extends Request {
 export const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
+    
+    if (!email || !password) {
+        return res.status(400).json({ mensaje: 'Faltan credenciales.' });
+    }
     const usuario = await Usuario.findOne({ email });
     if (!usuario) {
       return res.status(401).json({ mensaje: 'Email inválido' });
