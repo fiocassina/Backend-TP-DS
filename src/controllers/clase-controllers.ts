@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as service from '../services/clase-services.js';
 import Clase from '../model/clase-model.js';
+import proyectoModel from '../model/proyecto-model.js';
 import mongoose from 'mongoose';
 import { esTextoValido } from '../utils/validaciones.js';
 interface RequestConUser extends Request {
@@ -16,8 +17,8 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
       return;
     }
 
-    const clasesComoProfe = await Clase.find({ profesorId: userId });
-    const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');
+  const clasesComoProfe = await Clase.find({ profesorId: userId }).populate('profesorId', 'nombreCompleto');
+  const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');
 
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
@@ -95,6 +96,14 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
 
 export const deleteClase = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { id } = req.params;
+    const proyectosAsociados = await proyectoModel.countDocuments({ clase: id });
+    if (proyectosAsociados > 0) {
+        res.status(400).json({ 
+          message: `No se puede eliminar la clase porque tiene ${proyectosAsociados} proyectos asociados. Elimínalos primero.` 
+        });
+        return;
+    }
     const claseEliminada = await service.remove(req.params.id);
     if (claseEliminada) {
       res.status(200).json({ message: 'Clase eliminada', data: claseEliminada });
