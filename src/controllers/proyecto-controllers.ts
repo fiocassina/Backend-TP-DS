@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as service from "../services/proyecto-service.js";
 import proyectoModel from "../model/proyecto-model.js";
 import { esFechaFutura, esTextoValido } from '../utils/validaciones.js';
-
+import entregaModel from "../model/entrega-model.js";
 interface RequestConUser extends Request {
   user?: { id: string; rol?: string };
 }
@@ -82,7 +82,16 @@ export const updateProyecto = async (req: Request, res: Response) => {
 
 export const deleteProyecto = async (req: Request, res: Response) => {
   try {
-    const proyectoEliminado = await service.deleteProyecto(req.params.id);
+    const { id } = req.params;
+        // Verificar si hay entregas asociadas
+        const entregasAsociadas = await entregaModel.countDocuments({ proyecto: id }); // O proyectoId según tu esquema
+        if (entregasAsociadas > 0) {
+            return res.status(400).json({ 
+                message: `No se puede eliminar el proyecto porque tiene ${entregasAsociadas} entregas asociadas. Eliminalas primero.` 
+            });
+        }
+        // Si no hay entregas, puede borrarse 
+        const proyectoEliminado = await service.deleteProyecto(id);
     if (!proyectoEliminado) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
@@ -98,7 +107,6 @@ export const deleteProyecto = async (req: Request, res: Response) => {
 
 export const getProyectosPorClase = async (req: Request, res: Response) => {
   const { claseId } = req.params;
-
   try {
     const proyectos = await service.getProyectosPorClase(claseId);
     res.status(200).json(proyectos);
