@@ -24,5 +24,5 @@ export const esTextoValido = (texto: string, min: number, max?: number): boolean
 };
 
 export const esPasswordValida = (password: string): boolean => {
-    return typeof password === 'string' && password.length >= 6;
+    return typeof password === 'string' && password.length >= 6 && /[A-Z]/.test(password) && /[0-9]/.test(password);
 };

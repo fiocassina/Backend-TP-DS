@@ -59,7 +59,7 @@ export const registrar = async (req: Request, res: Response, next: NextFunction)
       return res.status(400).json({ mensaje: 'El nombre debe tener entre 3 y 50 caracteres.' });
     }
     if (!esPasswordValida(restoDeDatos.password)) { 
-      return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+      return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres, una mayúscula y un número.' });
     }
     const usuarioExistente = await Usuario.findOne({ email });
     if (usuarioExistente) {
@@ -186,9 +186,8 @@ export const nuevaContrasena = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Código inválido o expirado" });
     }
     if (!esPasswordValida(nuevaPassword)) {
-        return res.status(400).json({ mensaje: 'La nueva contraseña debe tener al menos 6 caracteres.' });
-    } //Ver si esta validacion esta bien ubicada
-    // El middleware .pre('save') en el model detecta el cambio y encripta la contraseña.
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe tener al menos 6 caracteres, una mayúscula y un número.' });
+    } 
     usuario.password = nuevaPassword;
 
     // Limpiamos token
