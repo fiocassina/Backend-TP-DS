@@ -129,6 +129,33 @@ export const updatePerfil = async (req: RequestConUser, res: Response) => {
   }
 };
 
+export const cambiarPasswordAutenticado = async (req: RequestConUser, res: Response) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user?.id;
+        const usuario = await Usuario.findById(userId);
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        const esCorrecta = await usuario.compararPassword(currentPassword);
+        if (!esCorrecta) {
+            return res.status(422).json({ mensaje: 'La contraseña actual es incorrecta.' });
+        }
+        if (!esPasswordValida(newPassword)) {
+            return res.status(400).json({ 
+                mensaje: 'La nueva contraseña debe tener al menos 6 caracteres, una mayúscula y un número.' 
+            });
+        }
+        usuario.password = newPassword;
+        await usuario.save();
+        res.status(200).json({ mensaje: 'Contraseña actualizada con éxito.' });
+
+    } catch (error: any) {
+        res.status(500).json({ mensaje: 'Error al procesar el cambio de contraseña' });
+    }
+};
+
 export const desactivarPerfil = async (req: RequestConUser, res: Response) => {
   try {
     await Usuario.findByIdAndUpdate(req.user?.id, { activo: false });
