@@ -39,7 +39,6 @@ export const create = async (data: { nombre: string; tipo: string; clase: string
     newMaterialData.nombreArchivo = data.nombreArchivo;
   }
 
-  // Aquí no suele fallar, pero si falla, usá (MaterialModel as any).create(...)
   return MaterialModel.create(newMaterialData);
 };
 

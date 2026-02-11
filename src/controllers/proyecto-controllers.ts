@@ -83,24 +83,40 @@ export const updateProyecto = async (req: Request, res: Response) => {
 export const deleteProyecto = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-        // Verificar si hay entregas asociadas
-        const entregasAsociadas = await entregaModel.countDocuments({ proyecto: id }); // O proyectoId según tu esquema
-        if (entregasAsociadas > 0) {
-            return res.status(400).json({ 
-                message: `No se puede eliminar el proyecto porque tiene ${entregasAsociadas} entregas asociadas. Eliminalas primero.` 
-            });
-        }
-        // Si no hay entregas, puede borrarse 
-        const proyectoEliminado = await service.deleteProyecto(id);
-    if (!proyectoEliminado) {
-      return res.status(404).json({ message: "Proyecto no encontrado" });
+    const entregasAsociadas = await entregaModel.countDocuments({ proyecto: id });
+    if (entregasAsociadas > 0) { //si el proyecto tiene entregas, lo cancelamos
+      const proyectoCancelado = await proyectoModel.findByIdAndUpdate(
+        id,
+        { estado: 'cancelado' },
+        { new: true } 
+      );
+
+      if (!proyectoCancelado) {
+        return res.status(404).json({ message: "Proyecto no encontrado." });
+      }
+
+      return res.status(200).json({
+        mensaje: 'El proyecto tiene entregas. Se marcó como CANCELADO.',
+        tipo: 'CANCELADO',
+        proyecto: proyectoCancelado 
+      });
+
+    } else { // si el proyecto no tiene entregas, se elimina permanentemente
+      const proyectoEliminado = await proyectoModel.findByIdAndDelete(id);
+
+      if (!proyectoEliminado) {
+        return res.status(404).json({ message: "Proyecto no encontrado." });
+      }
+
+      return res.status(200).json({
+        mensaje: 'El proyecto no tenía entregas. Se eliminó permanentemente.',
+        tipo: 'ELIMINADO'
+      });
     }
-    res.status(200).json({ message: "Proyecto eliminado con éxito" });
-  } 
-  catch (error) 
-  {
+
+  } catch (error) {
     console.error("Error al eliminar el proyecto:", error);
-    res.status(500).json({ error: "Error al eliminar el proyecto" });
+    return res.status(500).json({ error: "Error interno al procesar la solicitud." });
   }
 };
 

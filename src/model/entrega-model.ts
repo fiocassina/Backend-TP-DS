@@ -43,7 +43,7 @@ const entregaSchema = new Schema<Entrega>({
     type: String,
     required: true,
     enum: ['pendiente', 'aprobada', 'desaprobada'],
-    default: 'pendiente' // Por defecto, una entrega está pendiente
+    default: 'pendiente' 
   }
 }, {
   timestamps: true

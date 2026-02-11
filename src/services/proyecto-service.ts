@@ -9,6 +9,7 @@ interface ProyectoInput {
   claseId: string;
   tipoProyectoId: string;
   fechaEntrega: Date;
+  estado?: 'activo' | 'cancelado' | 'finalizado';
 }
 
 export const crearProyecto = async (data: ProyectoInput): Promise<IProyecto> => {
