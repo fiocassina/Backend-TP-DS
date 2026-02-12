@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import * as service from '../services/material-services.js';
 import { MaterialModel } from '../model/material-model.js';
 import { esTextoValido } from '../utils/validaciones.js';
+import fs from 'fs';
 
 interface RequestWithFile extends Request {
   file?: Express.Multer.File;
@@ -46,15 +47,38 @@ export const createMaterial = async (req: RequestWithFile, res: Response): Promi
   const { nombre, tipoId, claseId, url } = req.body;
   const file = req.file;
   if (!esTextoValido(nombre, 3, 50)) {
+    if (file && file.path) {
+        try { fs.unlinkSync(file.path); } catch(e) { console.error(e); }
+    }
         res.status(400).json({ message: 'El nombre del material debe tener entre 3 y 50 caracteres.' });
         return;
     }
   if (!nombre || !tipoId || !claseId) {
+    if (file && file.path) {
+        try { fs.unlinkSync(file.path); } catch(e) { console.error(e); }
+    }
     res.status(400).json({ message: 'Nombre, tipo y clase son requeridos' });
     return;
   }
 
   try {
+    const materialExistente = await (MaterialModel as any).findOne({ 
+        nombre: { $regex: new RegExp(`^${nombre}$`, 'i') }, 
+        clase: claseId 
+    });
+    if (materialExistente) {
+        if (file && file.path) {
+            try { 
+                fs.unlinkSync(file.path); 
+                console.log('Archivo duplicado eliminado del disco:', file.path);
+            } catch(e) { 
+                console.error('Error borrando archivo temporal', e); 
+            } //se borra el archivo para evitar archivos innecesarios en el servidor
+        }
+        
+        res.status(400).json({ message: 'Ya existe un material con este nombre en la clase. Modifique el nombre para publicar uno nuevo.' });
+        return;
+    }
     let materialData: any = {
       nombre,
       tipo: tipoId,
@@ -75,6 +99,9 @@ export const createMaterial = async (req: RequestWithFile, res: Response): Promi
     res.status(201).json({ message: 'Material creado', data: nuevoMaterial });
   } catch (error) {
     console.error('Error en controller createMaterial:', error);
+    if (file && file.path) {
+        try { fs.unlinkSync(file.path); } catch(e) {}
+    }
     res.status(500).json({ message: 'Error interno al crear material' });
   }
 };
