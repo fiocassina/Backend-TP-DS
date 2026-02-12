@@ -16,10 +16,10 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
       res.status(401).json({ mensaje: "Usuario no autenticado" });
       return;
     }
-
-  const clasesComoProfe = await Clase.find({ profesorId: userId }).populate('profesorId', 'nombreCompleto');
-  const clasesComoAlumno = await Clase.find({ alumnos: userId }).populate('profesorId', 'nombreCompleto');
-
+    const clasesComoProfe = await Clase.find({ profesorId: userId })
+        .populate('profesorId', 'nombreCompleto activo');
+    const clasesComoAlumno = await Clase.find({ alumnos: userId })
+        .populate('profesorId', 'nombreCompleto activo');
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
     console.error(error);
@@ -30,8 +30,8 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
 export const getClaseById = async (req: Request, res: Response) => {
   try {
     const clase = await Clase.findById(req.params.id)
-      .populate('profesorId', 'nombreCompleto')
-      .populate('alumnos', 'nombreCompleto email'); 
+      .populate('profesorId', 'nombreCompleto activo')
+      .populate('alumnos', 'nombreCompleto email activo'); 
       
     if (clase) {
       res.status(200).json(clase);

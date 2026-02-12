@@ -156,14 +156,25 @@ export const cambiarPasswordAutenticado = async (req: RequestConUser, res: Respo
     }
 };
 
+
 export const desactivarPerfil = async (req: RequestConUser, res: Response) => {
   try {
-    await Usuario.findByIdAndUpdate(req.user?.id, { activo: false });
+    const usuario = await Usuario.findByIdAndUpdate(
+        req.user?.id, 
+        { activo: false },
+        { new: true } 
+    );
+    
+    if (!usuario) {
+        return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
     res.status(200).json({ mensaje: 'Usuario dado de baja correctamente' });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al dar de baja el usuario', error });
   }
 };
+
 
 export const olvideContrasena = async (req: Request, res: Response) => {
   const { email } = req.body;
