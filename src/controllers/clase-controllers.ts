@@ -61,6 +61,17 @@ export const createClase = async (req: RequestConUser, res: Response): Promise<v
   }
 
   try {
+    const claseExistente = await Clase.findOne({
+      profesorId: userId,
+      nombre: { $regex: new RegExp(`^${req.body.nombre.trim()}$`, 'i') } 
+    });
+
+    if (claseExistente) {
+      res.status(400).json({ 
+        message: `Ya tienes una clase creada con el nombre "${req.body.nombre}". Por favor, elige otro nombre.` 
+      });
+      return; 
+    }
     const nuevaClase = await service.create({
       ...req.body,
       profesorId: new mongoose.Types.ObjectId(userId), 

@@ -32,7 +32,8 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
     const proyectosPendientes = await Proyecto.find({
       clase: { $in: claseIds },
       _id: { $nin: proyectosEntregadosIds },
-      fechaEntrega: { $gte: hoy } 
+      fechaEntrega: { $gte: hoy }, 
+      estado: { $ne: 'cancelado' }
     })
     .populate({
         path: 'clase',
