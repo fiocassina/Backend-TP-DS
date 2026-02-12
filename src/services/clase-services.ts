@@ -2,7 +2,6 @@ import ClaseModel, {IClase} from '../model/clase-model.js';
 import mongoose from 'mongoose';
 import { MaterialModel } from '../model/material-model.js';
 
-
 export const getAll = async (): Promise<IClase[]> => {
   try {
     const clases = await ClaseModel.find(); 

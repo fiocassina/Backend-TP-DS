@@ -213,3 +213,20 @@ export const expulsarAlumno = async (req: RequestConUser, res: Response) => {
     res.status(500).json({ message: 'Error al eliminar alumno', error });
   }
 };
+
+export const checkSoyAlumno = async (req: RequestConUser, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+        res.json({ esAlumno: false });
+        return;
+    }
+
+    const cantidad = await Clase.countDocuments({ alumnos: userId });
+
+    res.json({ esAlumno: cantidad > 0 });
+  } catch (error) {
+    console.error("Error verificando rol de alumno:", error);
+    res.status(500).json({ message: "Error al verificar rol" });
+  }
+};

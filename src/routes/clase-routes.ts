@@ -7,12 +7,15 @@ import {
   updateClase,
   deleteClase,
   inscribirAlumno,
-  expulsarAlumno
+  expulsarAlumno,
+  checkSoyAlumno
 } from '../controllers/clase-controllers.js';
 
 const router = Router();
 
 router.get('/', auth, getMisClases);
+
+router.get('/verificar-alumno', auth, checkSoyAlumno);
 
 router.get('/:id', auth, esMiembroDeLaClase, getClaseById); 
 
