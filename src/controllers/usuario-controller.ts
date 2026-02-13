@@ -217,11 +217,11 @@ export const nuevaContrasena = async (req: Request, res: Response) => {
   const { email, codigo, nuevaPassword } = req.body;
 
   try {
-    const usuario = await Usuario.findOne({
-      email,
-      resetPasswordToken: codigo,
-      resetPasswordExpires: { $gt: Date.now() } 
-    });
+const usuario = await Usuario.findOne({
+  email: email.trim(),
+  resetPasswordToken: String(codigo).trim(),
+  resetPasswordExpires: { $gt: new Date() } 
+});
 
     if (!usuario) {
       return res.status(400).json({ message: "Código inválido o expirado" });

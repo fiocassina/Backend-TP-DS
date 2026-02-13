@@ -9,7 +9,8 @@ import {
   deleteClase,
   inscribirAlumno,
   expulsarAlumno,
-  checkSoyAlumno
+  checkSoyAlumno,
+  salirDeClase
 } from '../controllers/clase-controllers.js';
 
 const router = Router();
@@ -30,5 +31,7 @@ router.delete('/:id', auth, esProfeDeLaClase, deleteClase);
 router.delete('/:id/alumnos/:alumnoId', auth, esProfeDeLaClase, expulsarAlumno);
 
 router.post('/inscribir', auth, inscribirAlumno); 
+
+router.delete('/:id/salir', auth, salirDeClase);
 
 export default router;

@@ -270,3 +270,30 @@ export const checkSoyAlumno = async (req: RequestConUser, res: Response): Promis
     res.status(500).json({ message: "Error al verificar rol" });
   }
 };
+
+
+export const salirDeClase = async (req: RequestConUser, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params; 
+
+    if (!userId) return res.status(401).json({ message: 'Usuario no autenticado' });
+
+    const clase = await Clase.findById(id);
+    if (!clase) return res.status(404).json({ message: 'Clase no encontrada' });
+
+
+    if (clase.profesorId.toString() === userId) {
+      return res.status(403).json({ message: 'El profesor no puede darse de baja de su propia clase.' });
+    }
+
+
+    clase.alumnos = clase.alumnos.filter(a => a.toString() !== userId);
+    await clase.save();
+
+    res.status(200).json({ message: 'Te has dado de baja de la clase exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al intentar salir de la clase', error });
+  }
+};
