@@ -8,6 +8,7 @@ export interface IClase extends Document {
     clave: string;
     profesorId: Types.ObjectId; 
     alumnos: Types.ObjectId[]; 
+    archivada: boolean;
 }
 
 const claseSchema = new Schema<IClase>({
@@ -23,7 +24,8 @@ const claseSchema = new Schema<IClase>({
     alumnos: [{
         type: Schema.Types.ObjectId, 
         ref: 'Usuario' 
-    }] 
+    }],
+    archivada: { type: Boolean, default: false } 
 }, {
     timestamps: true
 });

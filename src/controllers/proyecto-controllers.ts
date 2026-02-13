@@ -3,6 +3,7 @@ import * as service from "../services/proyecto-service.js";
 import proyectoModel from "../model/proyecto-model.js";
 import { esFechaFutura, esTextoValido } from '../utils/validaciones.js';
 import entregaModel from "../model/entrega-model.js";
+import claseModel from "../model/clase-model.js";
 interface RequestConUser extends Request {
   user?: { id: string; rol?: string };
 }
@@ -22,10 +23,20 @@ export const crearProyecto = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "La descripción debe tener entre 5 y 200 caracteres." });
     }
     const fechaObj = new Date(fechaEntrega);
-
-
+    
     if (!esFechaFutura(fechaObj)) {
         return res.status(400).json({ error: "La fecha de entrega no puede ser en el pasado." });
+    }
+
+    const clase = await claseModel.findById(claseId);
+    if (!clase) {
+        return res.status(404).json({ error: "La clase especificada no existe." });
+    }
+
+    if (clase.archivada) {
+        return res.status(403).json({ 
+            error: "No se puede crear un proyecto porque la clase está archivada." 
+        });
     }
 
     const nuevoProyecto = await service.crearProyecto({
@@ -48,6 +59,7 @@ export const crearProyecto = async (req: Request, res: Response) => {
 
 export const updateProyecto = async (req: Request, res: Response) => {
   try {
+    const { id } = req.params;
     const { nombre, descripcion, fechaEntrega } = req.body;
 
     if (nombre !== undefined && !esTextoValido(nombre, 3, 50)) {
@@ -65,11 +77,24 @@ export const updateProyecto = async (req: Request, res: Response) => {
         }
     }
 
-    const proyectoActualizado = await service.updateProyecto(req.params.id, req.body);
-    
-    if (!proyectoActualizado) {
+    const proyectoExistente = await proyectoModel.findById(id).populate('clase');
+    if (!proyectoExistente) {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
+
+    const clase = proyectoExistente.clase as any;
+    
+    if (clase && clase.archivada) {
+        return res.status(403).json({ 
+            message: "No se puede modificar el proyecto porque la clase está archivada." 
+        });
+    }
+    if (proyectoExistente.estado === 'cancelado') {
+        return res.status(400).json({ 
+            message: "No se puede modificar el proyecto porque el mismo está cancelado." 
+        });
+    }
+    const proyectoActualizado = await service.updateProyecto(id, req.body);
     
     res.status(200).json(proyectoActualizado);
 
@@ -79,39 +104,40 @@ export const updateProyecto = async (req: Request, res: Response) => {
   }
 };
 
-
 export const deleteProyecto = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const proyecto = await proyectoModel.findById(id).populate('clase');
+
+    if (!proyecto) {
+       return res.status(404).json({ message: "Proyecto no encontrado." });
+    }
+    const clase = proyecto.clase as any;
+    if (clase && clase.archivada) {
+        return res.status(403).json({ 
+            message: "No se puede eliminar el proyecto: La clase está archivada." 
+        });
+    }
+
     const entregasAsociadas = await entregaModel.countDocuments({ proyecto: id });
-    if (entregasAsociadas > 0) { //si el proyecto tiene entregas, lo cancelamos
-      const proyectoCancelado = await proyectoModel.findByIdAndUpdate(
-        id,
-        { estado: 'cancelado' },
-        { new: true } 
-      );
 
-      if (!proyectoCancelado) {
-        return res.status(404).json({ message: "Proyecto no encontrado." });
-      }
+    if (entregasAsociadas > 0) { 
+       proyecto.estado = 'cancelado';
+       const proyectoCancelado = await proyecto.save();
 
-      return res.status(200).json({
-        mensaje: 'El proyecto tiene entregas. Se marcó como CANCELADO.',
-        tipo: 'CANCELADO',
-        proyecto: proyectoCancelado 
-      });
+       return res.status(200).json({
+         mensaje: 'El proyecto tiene entregas. Se marcó como CANCELADO.',
+         tipo: 'CANCELADO',
+         proyecto: proyectoCancelado 
+       });
 
-    } else { // si el proyecto no tiene entregas, se elimina permanentemente
-      const proyectoEliminado = await proyectoModel.findByIdAndDelete(id);
+    } else { 
+       await proyectoModel.findByIdAndDelete(id);
 
-      if (!proyectoEliminado) {
-        return res.status(404).json({ message: "Proyecto no encontrado." });
-      }
-
-      return res.status(200).json({
-        mensaje: 'El proyecto no tenía entregas. Se eliminó permanentemente.',
-        tipo: 'ELIMINADO'
-      });
+       return res.status(200).json({
+         mensaje: 'El proyecto no tenía entregas. Se eliminó permanentemente.',
+         tipo: 'ELIMINADO'
+       });
     }
 
   } catch (error) {

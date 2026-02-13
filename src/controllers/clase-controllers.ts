@@ -16,14 +16,46 @@ export const getMisClases = async (req: RequestConUser, res: Response) => {
       res.status(401).json({ mensaje: "Usuario no autenticado" });
       return;
     }
-    const clasesComoProfe = await Clase.find({ profesorId: userId })
-        .populate('profesorId', 'nombreCompleto activo');
-    const clasesComoAlumno = await Clase.find({ alumnos: userId })
-        .populate('profesorId', 'nombreCompleto activo');
+
+  const clasesComoProfe = await Clase.find({ profesorId: userId, archivada: { $ne: true } }).populate('profesorId', 'nombreCompleto');
+  const clasesComoAlumno = await Clase.find({ alumnos: userId, archivada: { $ne: true }}).populate('profesorId', 'nombreCompleto');
+
     res.status(200).json({ clasesComoProfe, clasesComoAlumno });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al obtener clases", error });
+  }
+};
+
+export const getClasesArchivadas = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    if (!userId) return res.status(401).json({ message: "Usuario no autenticado" });
+
+    const [archivadasComoProfe, archivadasComoAlumno] = await Promise.all([
+      Clase.find({ 
+        profesorId: userId, 
+        archivada: true 
+      })
+      .populate('profesorId', 'nombreCompleto') 
+      .lean(),
+
+      Clase.find({ 
+        alumnos: userId, 
+        archivada: true 
+      })
+      .populate('profesorId', 'nombreCompleto') 
+      .lean()
+    ]);
+
+    res.status(200).json({ 
+      clasesComoProfe: archivadasComoProfe, 
+      clasesComoAlumno: archivadasComoAlumno 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener clases archivadas' });
   }
 };
 
@@ -91,7 +123,7 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
         res.status(400).json({ message: 'El nombre de la clase debe tener al menos 3 caracteres.' });
         return;
     }
-    // 👆
+    
     const claseActualizada = await service.update(req.params.id, req.body);
     if (claseActualizada) {
       const clasePopulada = await Clase.findById(claseActualizada._id).populate('profesorId', 'nombreCompleto');
@@ -105,26 +137,28 @@ export const updateClase = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const deleteClase = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const deleteClase = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const proyectosAsociados = await proyectoModel.countDocuments({ clase: id });
-    if (proyectosAsociados > 0) {
-        res.status(400).json({ 
-          message: `No se puede eliminar la clase porque tiene ${proyectosAsociados} proyectos asociados. Elimínalos primero.` 
+
+    try {
+        const clase = await Clase.findByIdAndUpdate(
+            id, 
+            { archivada: true }, 
+            { new: true } 
+        );
+
+        if (!clase) {
+            return res.status(404).json({ message: 'Clase no encontrada' });
+        }
+
+        res.status(200).json({ 
+            message: 'Clase archivada correctamente.',
+            clase 
         });
-        return;
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error al archivar la clase' });
     }
-    const claseEliminada = await service.remove(req.params.id);
-    if (claseEliminada) {
-      res.status(200).json({ message: 'Clase eliminada', data: claseEliminada });
-    } else {
-      res.status(404).json({ message: 'Clase no encontrada' });
-    }
-  } catch (error) {
-    console.error(`Error en controller deleteClase con ID ${req.params.id}:`, error);
-    res.status(500).json({ message: 'Error interno del servidor al eliminar clase' });
-  }
 };
 
 export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
@@ -146,6 +180,12 @@ export const inscribirAlumno = async (req: RequestConUser, res: Response) => {
     if (!clase) {
       res.status(404).json({ mensaje: "Clase no encontrada" });
       return;
+    }
+
+    if (clase.archivada) {
+        return res.status(403).json({ 
+            mensaje: "No se puede inscribir: La clase está archivada." 
+        });
     }
 
     if (clase.profesorId.toString() === userId) {

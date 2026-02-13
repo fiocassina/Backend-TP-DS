@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { auth, esProfeDeLaClase, esMiembroDeLaClase } from '../middleware/auth.js'; 
 import {
   getMisClases,
+  getClasesArchivadas,
   getClaseById,
   createClase,
   updateClase,
@@ -17,6 +18,7 @@ router.get('/', auth, getMisClases);
 
 router.get('/verificar-alumno', auth, checkSoyAlumno);
 
+router.get('/archivadas', auth, getClasesArchivadas);
 router.get('/:id', auth, esMiembroDeLaClase, getClaseById); 
 
 router.post('/', auth, createClase); 

@@ -54,12 +54,14 @@ export const getProyectosPendientesAlumno = async (req: RequestWithFile, res: Re
   }
 };
 
+
 export const crearEntrega = async (req: RequestWithFile, res: Response) => {
   try {
     const alumnoId = req.user?.id;
     if (!alumnoId) return res.status(401).json({ message: "Usuario no autenticado" });
 
     const { proyectoId, comentario } = req.body;
+    
     if (!proyectoId) return res.status(400).json({ message: "Falta proyectoId" });
     if (!mongoose.Types.ObjectId.isValid(proyectoId)) {
         return res.status(400).json({ message: "ID de proyecto inválido." });
@@ -67,7 +69,25 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
     if (comentario && !esTextoValido(comentario, 0, 500)) {
         return res.status(400).json({ message: "El comentario no puede superar los 500 caracteres." });
     }
-    // Verificar si ya existe una entrega para este alumno y proyecto
+
+    const proyecto = await Proyecto.findById(proyectoId).populate('clase');
+
+    if (!proyecto) {
+        return res.status(404).json({ message: "El proyecto no existe." });
+    }
+
+    if (proyecto.estado === 'cancelado') {
+        return res.status(400).json({ 
+            message: "No puedes realizar entregas en este proyecto porque fue cancelado." 
+        });
+    }
+    const clase = proyecto.clase as any; 
+    if (clase && clase.archivada) {
+        return res.status(403).json({ 
+            message: "No puedes realizar entregas porque la clase está archivada." 
+        });
+    }
+
     const entregaExistente = await Entrega.findOne({ alumno: alumnoId, proyecto: proyectoId });
     if (entregaExistente) {
       return res.status(400).json({ message: "Ya has entregado este proyecto" });
@@ -96,6 +116,7 @@ export const crearEntrega = async (req: RequestWithFile, res: Response) => {
     const entregaConEstado = { ...entregaConPopulates.toObject(), estado: entregaConPopulates.estado || 'pendiente' };
 
     res.status(201).json({ message: "Entrega creada con éxito", data: entregaConEstado });
+
   } catch (error) {
     console.error("Error al crear entrega:", error);
     res.status(500).json({ error: "Error al crear la entrega" });
@@ -109,14 +130,26 @@ export const editarEntrega = async (req: Request, res: Response) => {
     if (comentario && !esTextoValido(comentario, 0, 500)) {
         return res.status(400).json({ message: "El comentario no puede superar los 500 caracteres." });
     }
-    const entrega = await Entrega.findById(id);
+    const entrega = await Entrega.findById(id).populate({
+        path: 'proyecto',
+        populate: { path: 'clase' }
+    });
+
     if (!entrega) {
-      return res.status(404).json({ message: "Entrega no encontrada" });
+       return res.status(404).json({ message: "Entrega no encontrada" });
     }
 
-    if (comentario !== undefined) entrega.comentario = comentario;
-
+    const proyecto = entrega.proyecto as any; 
+    const clase = proyecto?.clase as any;
+    if (clase?.archivada) {
+        return res.status(400).json({ message: 'La clase está archivada.' });
+    }
+    if (proyecto?.estado === 'cancelado') {
+        return res.status(400).json({ message: 'El proyecto está cancelado.' });
+    }
     
+    if (comentario !== undefined){ entrega.comentario = comentario};
+
     if (req.file) {
       //eliminamos el archivo viejo físicamente
       if (entrega.archivoUrl) {
@@ -131,12 +164,9 @@ export const editarEntrega = async (req: Request, res: Response) => {
           }
         }
       }
-
       entrega.archivoUrl = `/uploads/${req.file.filename}`; 
     }
-
     const entregaActualizada = await entrega.save();
-
     res.status(200).json({ 
       message: "Entrega actualizada", 
       data: entregaActualizada 
@@ -152,9 +182,21 @@ export const eliminarEntrega = async (req: RequestWithFile, res: Response) => {
   try {
     const { id } = req.params;
     const usuarioId = req.user?.id;
-    const entrega = await Entrega.findById(id);
+    const entrega = await Entrega.findById(id).populate({
+        path: 'proyecto',
+        populate: { path: 'clase' }
+    });
     if (!entrega) {
       return res.status(404).json({ message: "Entrega no encontrada" });
+    }
+    const proyecto = entrega.proyecto as any; 
+    const clase = proyecto?.clase as any;
+
+    if (clase?.archivada) {
+        return res.status(400).json({ message: 'No se puede eliminar: La clase está archivada.' });
+    }
+    if (proyecto?.estado === 'cancelado') {
+        return res.status(400).json({ message: 'No se puede eliminar: El proyecto está cancelado.' });
     }
     if (entrega.alumno.toString() !== usuarioId) {
         return res.status(403).json({ message: "No tienes permiso para eliminar esta entrega." });
