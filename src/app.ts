@@ -9,12 +9,32 @@ import conectarDB from './config/db.js'
 import cors from 'cors'
 import entregaRoutes from './routes/entrega-routes.js'
 import correccionRoutes from "./routes/correccion-routes.js";
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 
 
 const app = express()
 conectarDB()
 
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API de Gestión de Clases - UTN FRRO',
+      version: '1.0.0',
+      description: 'Documentación de la API para el TP de DSW',
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000', 
+      },
+    ],
+  },
+  apis: ['./src/routes/*.ts', './routes/*.js', './src/routes/*.js'],
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 app.use('/uploads', express.static('uploads')); 
 app.use(cors());
@@ -23,6 +43,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/api/tipo-materiales', tipoMaterialRoutes)
 app.use('/api/usuarios', usuarioRoutes)
