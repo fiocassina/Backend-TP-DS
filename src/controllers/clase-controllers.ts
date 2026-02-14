@@ -239,7 +239,11 @@ export const expulsarAlumno = async (req: RequestConUser, res: Response) => {
 
     const clase = await Clase.findById(id);
     if (!clase) return res.status(404).json({ message: 'Clase no encontrada' });
-
+    if (clase.archivada) {
+            return res.status(403).json({ 
+                message: "No puedes expulsar alumnos de una clase archivada." 
+            });
+        }
     if (clase.profesorId.toString() !== userId) {
       return res.status(403).json({ message: 'No tienes permiso para expulsar alumnos de esta clase' });
     }
