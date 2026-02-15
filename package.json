@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
+    "start": "node dist/src/server.js",
     "start:dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/src/server.js\"",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles"
   },
