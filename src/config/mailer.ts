@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verificamos la conexión
-transporter.verify((error, success) => {
+/*transporter.verify((error, success) => {
   if (error) {
     console.error('Error al conectar con el servicio de correos:', error);
   } else {
@@ -32,5 +32,5 @@ transporter.verify((error, success) => {
     }
   }
 });
-
+*/
 export default transporter;
