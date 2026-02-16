@@ -37,7 +37,12 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 app.use('/uploads', express.static('uploads')); 
-app.use(cors());
+app.use(cors({
+
+  origin: process.env.FRONTEND_URL || 'http://localhost:4200', 
+  credentials: true, // Esto es importante si más adelante usan cookies o sesiones
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
