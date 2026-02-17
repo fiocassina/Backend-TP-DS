@@ -27,8 +27,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: process.env.BACKEND_URL || 'http://localhost:8080',
-        description: "Servidor Principal"      
+        url: 'http://localhost:8080', 
       },
     ],
   },
