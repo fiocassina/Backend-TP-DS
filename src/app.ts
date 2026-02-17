@@ -21,13 +21,13 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'API de Gestión de Clases - UTN FRRO',
+      title: 'API Studyroom',
       version: '1.0.0',
-      description: 'Documentación de la API para el TP de DSW',
+      description: 'Documentación de la API para TP de DSW',
     },
     servers: [
       {
-        url: 'http://localhost:3000', 
+        url: 'http://localhost:8080', 
       },
     ],
   },
