@@ -4,29 +4,23 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), 'variables.env') });
 
-console.log('Intentando conectar con:', process.env.EMAIL_USER);
+console.log('Configurando Nodemailer para:', process.env.EMAIL_USER);
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, 
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS, 
   },
-  tls: {
-    rejectUnauthorized: false
-  },
-  family: 4 
-} as any); 
+} as any);
 
-// Verificación 
+// Verificación rápida
 transporter.verify()
   .then(() => {
-    console.log('Nodemailer conectado correctamente con Gmail.');
+    console.log('¡CONECTADO! Gmail aceptó la conexión.');
   })
   .catch((error) => {
-    console.error('Error al conectar Nodemailer:', error);
+    console.error(' Error de conexión:', error);
   });
 
 export default transporter;
