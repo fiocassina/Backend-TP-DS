@@ -1,4 +1,3 @@
-
 import transporter from '../config/mailer.js';
 import EntregaModel from '../model/entrega-model.js';
 import ProyectoModel, { IProyecto } from '../model/proyecto-model.js';
@@ -19,28 +18,25 @@ const getTomorrowRange = () => {
   return { start: startOfTomorrow, end: endOfTomorrow };
 };
 
-// Definimos una interfaz para los objetos que guardaremos en la lista de envío
 interface IReminderToSend {
   alumno: IUsuario;
   proyecto: IProyecto;
 }
 
-
 export const checkAndSendReminders = async () => {
   console.log(' Iniciando el chequeo diario de entregas próximas a vencer...');
 
   try {
-    // 1. Obtenemos el rango de fechas de mañana
+    // Obtenemos el rango de fechas de mañana
     const { start, end } = getTomorrowRange();
     console.log(` Buscando proyectos que venzan el día: ${start.toLocaleDateString()}`);
-
 
     const proyectosVencenManana = await ProyectoModel.find({
       fechaEntrega: { $gte: start, $lte: end }
     }).populate({
-      path: 'clase', // Populamos la clase del proyecto
+      path: 'clase', 
       populate: {
-        path: 'alumnos' // Y dentro de la clase, populamos el array de alumnos
+        path: 'alumnos' 
       }
     });
 
@@ -49,33 +45,25 @@ export const checkAndSendReminders = async () => {
     // Lista donde guardaremos a quiénes hay que mandar mail
     const remindersToSend: IReminderToSend[] = [];
 
-
     for (const proyectoDoc of proyectosVencenManana) {
       const proyecto = proyectoDoc as unknown as IProyecto;
-
       const clase = proyectoDoc.clase as unknown as IClase;
       const alumnosInscritos = clase.alumnos as unknown as IUsuario[];
 
       console.log(`   Verificando proyecto "${proyecto.nombre}" en clase con ${alumnosInscritos.length} alumnos.`);
 
-
       for (const alumno of alumnosInscritos) {
-
         const yaEntrego = await EntregaModel.exists({
           proyecto: proyecto._id,
           alumno: alumno._id
         });
 
         if (!yaEntrego) {
-
           console.log(`       Alumno ${alumno.email} aún NO ha entregado. Agregando a lista.`);
           remindersToSend.push({ alumno, proyecto });
-        } else {
-        
         }
       }
     }
-
 
     console.log(` Total de recordatorios a enviar hoy: ${remindersToSend.length}`);
 
@@ -84,7 +72,6 @@ export const checkAndSendReminders = async () => {
         return;
     }
 
-    // 4. BUCLE DE ENVÍO DE CORREOS (Igual que antes)
     console.log(' Iniciando el envío de correos...');
 
     for (const reminder of remindersToSend) {
@@ -93,8 +80,8 @@ export const checkAndSendReminders = async () => {
       console.log(`Enviando recordatorio a: ${alumno.email} por el proyecto: "${proyecto.nombre}"`);
 
       const mailOptions = {
-        from: '"Campus Virtual DSW" <' + process.env.EMAIL_USER + '>',
-        to: alumno.email,
+        from: '"Campus Virtual DSW" <onboarding@resend.dev>', 
+        to: alumno.email, 
         subject: ` Recordatorio: Tu entrega de "${proyecto.nombre}" vence mañana`,
         html: `
           <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">

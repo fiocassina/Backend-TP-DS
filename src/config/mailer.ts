@@ -4,23 +4,24 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), 'variables.env') });
 
-console.log('Configurando Nodemailer para:', process.env.EMAIL_USER);
+console.log('Configurando transporte de correos...');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.resend.com', // <--- CAMBIO CLAVE: Usamos el servidor de Resend
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
+    user: 'resend',           
     pass: process.env.EMAIL_PASS, 
   },
 } as any);
 
-// Verificación rápida
 transporter.verify()
   .then(() => {
-    console.log('¡CONECTADO! Gmail aceptó la conexión.');
+    console.log('✅ Conexión EXITOSA con Resend.');
   })
   .catch((error) => {
-    console.error(' Error de conexión:', error);
+    console.error('❌ Error al conectar con Resend:', error);
   });
 
 export default transporter;

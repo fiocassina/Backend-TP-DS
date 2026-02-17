@@ -192,16 +192,20 @@ export const olvideContrasena = async (req: Request, res: Response) => {
     await usuario.save();
 
     await transporter.sendMail({
-      from: `"StudyRoom - Tu portal educativo" <${process.env.EMAIL_USER}>`, 
-      to: usuario.email,
+      from: '"StudyRoom - Tu portal educativo" <onboarding@resend.dev>', 
+      to: usuario.email, 
       subject: "Restablecer Contraseña - Código de Verificación",
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Recuperación de Cuenta</h2>
-            <p>Hola ${usuario.nombreCompleto},</p>
-            <p>Usá el siguiente código para restablecer tu contraseña:</p>
-            <h1 style="color: #0d6efd; letter-spacing: 5px; font-size: 32px;">${codigo}</h1>
-            <p><small>Este código expira en 1 hora.</small></p>
+        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h2 style="color: #333;">Recuperación de Cuenta</h2>
+            <p>Hola <strong>${usuario.nombreCompleto}</strong>,</p>
+            <p>Recibimos una solicitud para restablecer tu contraseña. Usá el siguiente código:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <span style="background-color: #f0f4ff; color: #0d6efd; letter-spacing: 5px; font-size: 32px; padding: 10px 20px; border-radius: 5px; font-weight: bold; border: 1px dashed #0d6efd;">
+                    ${codigo}
+                </span>
+            </div>
+            <p><small>Este código expira en 1 hora. Si no pediste este cambio, ignorá este correo.</small></p>
         </div>
       `,
     });
