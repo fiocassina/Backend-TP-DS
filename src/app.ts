@@ -30,6 +30,96 @@ const swaggerOptions = {
         url: process.env.BACKEND_URL || 'http://localhost:8080',
         description: "Servidor Principal"      },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        }
+      },
+      schemas: {
+        Usuario: {
+          type: 'object',
+          properties: {
+            nombreCompleto: { type: 'string' },
+            email: { type: 'string' },
+            password: { type: 'string' },
+            rol: { type: 'string' },
+            activo: { type: 'boolean' }
+          }
+        },
+        Clase: {
+          type: 'object',
+          properties: {
+            nombre: { type: 'string' },
+            materia: { type: 'string' },
+            descripcion: { type: 'string' },
+            clave: { type: 'string' },
+            profesorId: { type: 'string' },
+            alumnos: { type: 'array', items: { type: 'string' } },
+            archivada: { type: 'boolean' }
+          }
+        },
+        Proyecto: {
+          type: 'object',
+          properties: {
+            nombre: { type: 'string' },
+            descripcion: { type: 'string' },
+            clase: { type: 'string' },
+            tipoProyecto: { type: 'string' },
+            fechaEntrega: { type: 'string' },
+            estado: { type: 'string' }
+          }
+        },
+        Entrega: {
+          type: 'object',
+          properties: {
+            proyecto: { type: 'string' },
+            alumno: { type: 'string' },
+            comentario: { type: 'string' },
+            archivoUrl: { type: 'string' },
+            estado: { type: 'string' }
+          }
+        },
+        Correccion: {
+          type: 'object',
+          properties: {
+            entrega: { type: 'string' },
+            nota: { type: 'number' },
+            comentario: { type: 'string' }
+          }
+        },
+        Material: {
+          type: 'object',
+          properties: {
+            nombre: { type: 'string' },
+            tipo: { type: 'string' },
+            clase: { type: 'string' },
+            url: { type: 'string' },
+            rutaArchivo: { type: 'string' }
+          }
+        },
+        TipoMaterial: {
+          type: 'object',
+          properties: {
+            nombre: { type: 'string' },
+            descripcion: { type: 'string' }
+          }
+        },
+        TipoProyecto: {
+          type: 'object',
+          properties: {
+            nombre: { type: 'string' },
+            descripcion: { type: 'string' }
+          }
+        }
+      }
+    },
+    security: [{
+      bearerAuth: []
+    }]
+  
   },
   apis: ['./src/routes/*.ts', './routes/*.js', './src/routes/*.js'],
 };
