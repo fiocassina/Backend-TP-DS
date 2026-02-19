@@ -13,7 +13,7 @@ cron.schedule('0 9 * * *', async () => {
 
 console.log('Sistema de recordatorios automáticos programado para las 09:00 AM diariamente.');
 
-// Convertimos explícitamente a Número para que TypeScript no tire error
+
 const PORT = Number(process.env.PORT) || 8080;
 
 app.listen(PORT, '0.0.0.0', () => {

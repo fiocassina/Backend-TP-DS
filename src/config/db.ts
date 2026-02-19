@@ -21,7 +21,9 @@ const seedTiposMaterial = async (): Promise<void> => {
     );
     }));
 
-    console.log('Tipos de material por defecto creados.');
+    if (process.env.NODE_ENV !== 'test') {
+        console.log('Tipos de material por defecto creados.');
+    }
 
 } catch (error) {
     if (process.env.NODE_ENV !== 'test') { 
@@ -39,7 +41,9 @@ const conectarDB = async (): Promise<void> => {
         }
         await mongoose.connect(process.env.DB_MONGO);
         
-        console.log('Base de datos conectada');
+        if (process.env.NODE_ENV !== 'test') {
+            console.log('Base de datos conectada');
+        }
 
         await seedTiposMaterial();
 
